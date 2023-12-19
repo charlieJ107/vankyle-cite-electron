@@ -2,9 +2,10 @@ import { useState } from 'react'
 import Footer from './components/footer';
 import { BrandVariants, FluentProvider, Theme, createDarkTheme, createLightTheme, makeStyles, mergeClasses, tokens } from '@fluentui/react-components';
 import Header from './components/header';
-import SideBar from './components/sidebar';
+import Query from './components/query';
 import Home from './components/home';
 import Panel from './components/panel';
+import SideBar from './components/side-bar';
 
 const vankyleCiteBlue: BrandVariants = {
   10: "#020305",
@@ -47,12 +48,15 @@ const useStyle = makeStyles({
     backgroundColor: tokens.colorBrandBackground
   },
   main: {
-    backgroundColor: tokens.colorNeutralBackground2
+    backgroundColor: tokens.colorNeutralBackground3
   },
-  sidebar:{
+  sideBar: {
     backgroundColor: tokens.colorBrandBackground2
+  },
+  sections: {
+    backgroundColor: tokens.colorNeutralBackground1
   }
-  
+
 })
 
 function App() {
@@ -61,9 +65,10 @@ function App() {
   return (
     <FluentProvider theme={theme} className={mergeClasses(style.root)}>
       <Header className={mergeClasses(style.header)} />
-      <main className={mergeClasses(style.main, "flex ")}>
-        <SideBar className={mergeClasses(style.sidebar)} />
-        <Home />
+      <main className={mergeClasses(style.main, "flex flex-1 h-100")}>
+        <SideBar className={mergeClasses(style.sideBar)} />
+        <Query className={mergeClasses(style.sections)} />
+        <Home className={mergeClasses(style.sections)} />
         <Panel />
       </main>
       <Footer />
