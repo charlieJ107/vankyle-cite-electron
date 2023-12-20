@@ -1,0 +1,68 @@
+import { BrandVariants, Theme, createDarkTheme, createLightTheme, makeStyles, tokens } from "@fluentui/react-components";
+
+const vankyleCiteBlue: BrandVariants = {
+    10: "#020305",
+    20: "#111723",
+    30: "#16263D",
+    40: "#193253",
+    50: "#1B3F6A",
+    60: "#1B4C82",
+    70: "#18599B",
+    80: "#1267B4",
+    90: "#3174C2",
+    100: "#4F82C8",
+    110: "#6790CF",
+    120: "#7D9ED5",
+    130: "#92ACDC",
+    140: "#A6BAE2",
+    150: "#BAC9E9",
+    160: "#CDD8EF"
+};
+
+const lightTheme: Theme = {
+    ...createLightTheme(vankyleCiteBlue),
+};
+
+const darkTheme: Theme = {
+    ...createDarkTheme(vankyleCiteBlue),
+};
+
+
+darkTheme.colorBrandForeground1 = vankyleCiteBlue[110];
+darkTheme.colorBrandForeground2 = vankyleCiteBlue[120];
+
+export function useTheme() {
+    return lightTheme;
+}
+
+export const useStyle = makeStyles({
+    root: {
+        display: "flex",
+        flexDirection: "column",
+        height: "100vh",
+        overflowBlock: "hidden"
+    },
+    header: {
+        backgroundColor: tokens.colorBrandBackground
+    },
+    main: {
+        display: "flex",
+        flexGrow: "1",
+        backgroundColor: tokens.colorNeutralBackground3,
+    },
+    sideBar: {
+        backgroundColor: tokens.colorBrandBackground2,
+        zIndex: 1
+    },
+    panels: {
+        backgroundColor: tokens.colorNeutralBackground1,
+        flexGrow: "0",
+        overflowY: "auto",
+    },
+    central: {
+        backgroundColor: tokens.colorNeutralBackground1,
+        flexGrow: "3",
+        overflowY: "auto",
+    }
+
+})

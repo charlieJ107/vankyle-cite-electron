@@ -5,7 +5,7 @@ import Search from "./search";
 export default function Query({ className }: { className?: string }) {
 
     return (
-        <section className={mergeClasses(className, "px-2 py-3 m-3 rounded")}>
+        <section className={mergeClasses(className, "flex flex-col px-2 py-3 m-3 rounded justify-between")}>
             <Search />
             <Tags />
         </section>
