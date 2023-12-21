@@ -1,35 +1,35 @@
 import { BrandVariants, Theme, createDarkTheme, createLightTheme, makeStyles, tokens } from "@fluentui/react-components";
 
-const vankyleCiteBlue: BrandVariants = {
-    10: "#020305",
-    20: "#111723",
-    30: "#16263D",
-    40: "#193253",
-    50: "#1B3F6A",
-    60: "#1B4C82",
-    70: "#18599B",
-    80: "#1267B4",
-    90: "#3174C2",
-    100: "#4F82C8",
-    110: "#6790CF",
-    120: "#7D9ED5",
-    130: "#92ACDC",
-    140: "#A6BAE2",
-    150: "#BAC9E9",
-    160: "#CDD8EF"
+const vankylePurple: BrandVariants = {
+    10: "#040205",
+    20: "#1C1323",
+    30: "#2F1D3E",
+    40: "#3E2555",
+    50: "#4F2D6D",
+    60: "#603587",
+    70: "#713DA0",
+    80: "#8345BB",
+    90: "#954ED7",
+    100: "#A35EE3",
+    110: "#AF71E7",
+    120: "#BB83EA",
+    130: "#C696EE",
+    140: "#D1A8F1",
+    150: "#DCBBF5",
+    160: "#E6CDF8"
 };
 
 const lightTheme: Theme = {
-    ...createLightTheme(vankyleCiteBlue),
+    ...createLightTheme(vankylePurple),
 };
 
 const darkTheme: Theme = {
-    ...createDarkTheme(vankyleCiteBlue),
+    ...createDarkTheme(vankylePurple),
 };
 
 
-darkTheme.colorBrandForeground1 = vankyleCiteBlue[110];
-darkTheme.colorBrandForeground2 = vankyleCiteBlue[120];
+darkTheme.colorBrandForeground1 = vankylePurple[110];
+darkTheme.colorBrandForeground2 = vankylePurple[120];
 
 export function useTheme() {
     return lightTheme;

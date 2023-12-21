@@ -1,14 +1,22 @@
-import { mergeClasses } from "@fluentui/react-components";
-import { PaperDetails } from "./paper-details";
-import { usePaperContext } from "../../../contexts/papers";
+import { Tab, TabList, mergeClasses } from "@fluentui/react-components";
+import { useState } from "react";
+import { DetailsPanel } from "./details";
 
 
 export default function Panel({ className }: { className?: string }) {
-    const papers = usePaperContext();
+
+    const [tab, setTab] = useState<"details" | "related">("details");
     // TODO: add a button to close the panel
     return (
-        <aside className={mergeClasses(className, "flex m-3 rounded p-3")}>
-            {papers.focusedPaper ? <PaperDetails paper={papers.focusedPaper} /> : null}
+        <aside className={mergeClasses(className, "flex flex-col m-3 rounded p-3")}>
+            <TabList className={mergeClasses("flex")}>
+                <Tab value={"details"}>Details</Tab>
+                <Tab value={"related"}>Related</Tab>
+            </TabList>
+            <div className="flex flex-grow">
+                {tab === "details" && <DetailsPanel />}
+                {tab === "related" && <div>Related</div>}
+            </div>
         </aside>
     );
 

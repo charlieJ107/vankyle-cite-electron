@@ -7,7 +7,7 @@ const useStyle = makeStyles({
     main: {
         display: "flex",
         flexGrow: "1",
-        backgroundColor: tokens.colorNeutralBackground3,
+        backgroundColor: tokens.colorNeutralBackground5,
     },
     element: {
         backgroundColor: tokens.colorNeutralBackground1,
