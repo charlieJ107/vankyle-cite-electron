@@ -1,11 +1,11 @@
+import { usePaperContext } from "../../../../contexts/papers";
 import PaperItem from "./paper-item";
-import { usePapers } from "./use-papers";
 
 export default function PapersList() {
-    const papers = usePapers();
+    const paperContext = usePaperContext();
     return (
         <div>
-            {papers.map((paper, index) => (
+            {paperContext.filteredPapers.map((paper, index) => (
                 <PaperItem key={index} paper={paper} />
             ))}
         </div>

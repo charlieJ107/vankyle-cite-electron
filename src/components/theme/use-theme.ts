@@ -45,24 +45,8 @@ export const useStyle = makeStyles({
     header: {
         backgroundColor: tokens.colorBrandBackground
     },
-    main: {
-        display: "flex",
-        flexGrow: "1",
-        backgroundColor: tokens.colorNeutralBackground3,
-    },
     sideBar: {
         backgroundColor: tokens.colorBrandBackground2,
         zIndex: 1
-    },
-    panels: {
-        backgroundColor: tokens.colorNeutralBackground1,
-        flexGrow: "0",
-        overflowY: "auto",
-    },
-    central: {
-        backgroundColor: tokens.colorNeutralBackground1,
-        flexGrow: "3",
-        overflowY: "auto",
     }
-
 })

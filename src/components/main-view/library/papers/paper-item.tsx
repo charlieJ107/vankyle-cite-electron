@@ -1,5 +1,6 @@
 import { Card, CardHeader, makeStyles, mergeClasses, tokens, typographyStyles } from "@fluentui/react-components";
-import { Paper } from "../../../models/paper";
+import { Paper } from "../../../../models/paper";
+import { usePaperDispatch } from "../../../../contexts/papers";
 
 const usePaperItemStyle = makeStyles({
     root: {
@@ -20,8 +21,15 @@ const usePaperItemStyle = makeStyles({
 
 export default function PaperItem({ paper }: { paper: Paper }) {
     const style = usePaperItemStyle();
+    const dispatch = usePaperDispatch();
+    const onFucusPaper = () => {
+        dispatch({
+            type: "FOCUS_PAPER",
+            paper: paper
+        });
+    }
     return (
-        <Card focusMode="no-tab" className={mergeClasses(style.root, "m-2")}>
+        <Card focusMode="no-tab" className={mergeClasses(style.root, "m-2")} onClick={onFucusPaper} >
             <CardHeader header={<PaperHeader paper={paper} />}
                 description={<PaperDetails paper={paper} />}>
             </CardHeader>

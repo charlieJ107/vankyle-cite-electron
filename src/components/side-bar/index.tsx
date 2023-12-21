@@ -8,11 +8,11 @@ export default function SideBar({ className }: { className?: string }) {
 
     const [tooltipRef, setTooltipRef] = useState<HTMLElement | null>(null);
     return (
-        <aside ref={setTooltipRef} className={mergeClasses(className, "rounded-r py-5 px-2 flex flex-col overflow-x-visible")}>
+        <nav ref={setTooltipRef} className={mergeClasses(className, "rounded-r py-5 px-2 flex flex-col overflow-x-visible")}>
             <SidebarIconButton tooltipRef={tooltipRef} icon={<BoardRegular />} content="Home" />
             {/* TODO: Addins icons and extension system */}
             <SidebarIconButton tooltipRef={tooltipRef} icon={<AppsAddInRegular />} content="Add Ins" />
-        </aside>
+        </nav>
     );
 
 }

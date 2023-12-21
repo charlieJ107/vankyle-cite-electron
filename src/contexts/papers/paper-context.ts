@@ -1,8 +1,4 @@
-export function usePapers() {
-    // TODO: implement
-    // Currently just a dummy function providing sample data
-    return _dummyPapersForDev;
-}
+import { PaperContextType } from "./paper-context-types";
 
 const _dummyPapersForDev = [
     // Generate dummy 3 papers for development
@@ -25,3 +21,11 @@ const _dummyPapersForDev = [
         authors: ["Author 1", "Author 2"]
     }
 ];
+
+export const InitialPaperContext: PaperContextType = {
+    filteredPapers: _dummyPapersForDev, // TODO: get from server
+    selectedPapers: [],
+    focusedPaper: null
+};
+
+
