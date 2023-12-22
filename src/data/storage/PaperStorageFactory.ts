@@ -1,0 +1,5 @@
+export class PaperStorageFactory {
+    constructor() {
+        
+    }
+}

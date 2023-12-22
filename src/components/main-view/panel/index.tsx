@@ -6,7 +6,7 @@ import { DetailsPanel } from "./details";
 export default function Panel({ className }: { className?: string }) {
 
     const [tab, setTab] = useState<"details" | "related">("details");
-    // TODO: add a button to close the panel
+    // TODO: Details panel or related panel or others
     return (
         <aside className={mergeClasses(className, "flex flex-col m-3 rounded p-3")}>
             <TabList className={mergeClasses("flex")}>
