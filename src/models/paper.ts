@@ -3,6 +3,7 @@ import { Group } from "./group";
 import { Tag } from "./tag";
 
 export interface Paper {
+    _id: string;
     title: string;
     authors: Author[];
     publication: string;
@@ -20,9 +21,9 @@ export interface Paper {
     tags: Tag;
     flagged: boolean;
     group: Group;
+    cite: string[]; // paper id
     doi?: string;
     arxivId?: string;
-
     [key: string]: unknown; // for future extension
 
 }
