@@ -48,14 +48,21 @@ function PaperHeader({ paper }: { paper: Paper }) {
 
 function PaperDetails({ paper }: { paper: Paper }) {
     const style = usePaperItemStyle();
+    const authors_name = paper.authors.map((author) => {
+        if (typeof author === "string") {
+            return author;
+        } else {
+            return author.name;
+        }
+    })
     return (
         <div>
             <p className={mergeClasses(style.authors)}>
-                {paper.authors.join(", ")}
+                {authors_name.join(", ")}
             </p>
             <p className={mergeClasses(style.description)}>
                 <span>
-                    {paper.date.getFullYear()}
+                    {paper.publishTime?.getFullYear()}
                 </span>
                 &nbsp; | &nbsp;
                 <span>

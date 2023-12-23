@@ -8,7 +8,7 @@ export function PaperDetails({ paper }: { paper: Paper }) {
             <Subtitle1 block >Authors</Subtitle1>
             <div className="flex flex-row flex-wrap">
                 {paper.authors.map((author, index) => (
-                    <Text className="m-2 p-2 hover:bg-white" key={index}>{author.name}</Text>
+                    <Text className="m-2 p-2 hover:bg-white" key={index}>{typeof author === "string" ? author : author.name}</Text>
                 ))}
             </div>
             <Subtitle1 block >Publisher</Subtitle1>
