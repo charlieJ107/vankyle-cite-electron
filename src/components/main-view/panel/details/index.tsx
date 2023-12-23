@@ -1,5 +1,5 @@
-import { usePaperContext } from "../../../../contexts/papers";
-import { PaperDetails } from "../paper-details";
+import { usePaperContext } from "../../../../contexts/papers/paper-context";
+import { PaperDetails } from "./paper-details";
 
 export function DetailsPanel() {
     const papers = usePaperContext();

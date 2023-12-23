@@ -3,25 +3,25 @@ import { Group } from "./group";
 import { Tag } from "./tag";
 
 export interface Paper {
-    _id: string;
+    _id: number;
     title: string;
-    authors: Author[];
-    publication: string;
-    publishTime: Date;
-    publishType: PublishType;
-    description: string;
-    urls: string[];
+    authors: Author[] | string[]; // author id
+    publication?: string;
+    publishTime?: Date;
+    publishType: PublishType | string;
+    description?: string;
+    urls?: string[];
     addTime: Date;
-    codes: string[];
-    pages: string;
-    volume: string;
-    number: string;
-    publisher: string;
+    codes?: string[];
+    pages?: string;
+    volume?: string;
+    number?: string;
+    publisher?: string;
     rating: number;
-    tags: Tag;
+    tags?: Tag[];
     flagged: boolean;
-    group: Group;
-    cite: string[]; // paper id
+    group?: Group;
+    cite: Paper[] | string[]; // paper id
     doi?: string;
     arxivId?: string;
     [key: string]: unknown; // for future extension
