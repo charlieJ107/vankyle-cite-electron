@@ -1,6 +1,6 @@
 import { Paper } from "../../models/paper";
 
-export interface PaperContextType {
+export interface PaperContextState {
     filteredPapers: Paper[];
     selectedPapers: Paper[];
     focusedPaper: Paper | null;

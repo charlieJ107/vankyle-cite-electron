@@ -1,7 +1,7 @@
 import { Paper } from "../../models/paper";
-import { PaperContextAction, PaperContextType } from "./paper-context-types";
+import { PaperContextAction, PaperContextState } from "./paper-context-types";
 
-export function paperContextReducer(state: PaperContextType, actions: PaperContextAction) {
+export function paperContextReducer(state: PaperContextState, actions: PaperContextAction) {
     switch (actions.type) {
         case "SELECT_PAPER":
             return {

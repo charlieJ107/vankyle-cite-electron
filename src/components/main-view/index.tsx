@@ -8,6 +8,9 @@ const useStyle = makeStyles({
         display: "flex",
         flexGrow: "1",
         backgroundColor: tokens.colorNeutralBackground5,
+        columnGap: "0.5rem",
+        paddingLeft: "0.5rem",
+        paddingRight: "0.5rem",
     },
     element: {
         backgroundColor: tokens.colorNeutralBackground1,
@@ -28,6 +31,7 @@ const useStyle = makeStyles({
 
 export default function MainView() {
     const style = useStyle();
+
     return (
         <main className={mergeClasses(style.main)}>
             <Board className={mergeClasses(style.board, style.element)} />

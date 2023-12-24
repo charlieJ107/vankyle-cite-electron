@@ -1,6 +1,6 @@
 import { createContext, useContext, useReducer } from "react";
 import { paperContextReducer } from "./paper-reducer";
-import { PaperContextAction, PaperContextType } from "./paper-context-types";
+import { PaperContextAction, PaperContextState } from "./paper-context-types";
 import { Author } from "../../models/author";
 import { Paper } from "../../models/paper";
 
@@ -56,13 +56,13 @@ const _dummyPapersForDev: Paper[] = [
   
 ];
 
-export const InitialPaperContext: PaperContextType = {
+export const InitialPaperContext: PaperContextState = {
     filteredPapers: _dummyPapersForDev, // TODO: get from server
     selectedPapers: [],
     focusedPaper: null
 };
 
-const PaperContext = createContext<PaperContextType>(InitialPaperContext);
+const PaperContext = createContext<PaperContextState>(InitialPaperContext);
 
 const PaperDispatchContext = createContext<React.Dispatch<PaperContextAction>>(() => { });
 
