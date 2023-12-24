@@ -40,12 +40,12 @@ const useRootStyle = makeStyles({
     }
 });
 
-export type ThemeType = "light" | "dark";
-const ThemeContext = createContext<ThemeType>("light");
-const ThemeSetContext = createContext<React.Dispatch<React.SetStateAction<ThemeType>>>(() => { });
+export type ThemeState = "light" | "dark";
+const ThemeContext = createContext<ThemeState>("light");
+const ThemeSetContext = createContext<React.Dispatch<React.SetStateAction<ThemeState>>>(() => { });
 
 export function ThemeContextProvider({ children }: { children: JSX.Element | JSX.Element[] }) {
-    const [theme, setTheme] = useState<ThemeType>("light");
+    const [theme, setTheme] = useState<ThemeState>("light");
     const rootStyle = useRootStyle();
     return (
         <ThemeContext.Provider value={theme}>
