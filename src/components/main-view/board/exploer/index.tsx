@@ -3,7 +3,7 @@ import { BlockTab } from "../../../../contexts/tabs/tabs-context-types";
 import { Button, SelectTabData, SelectTabEvent, Tab, TabList, TabValue, mergeClasses } from "@fluentui/react-components";
 import { DismissRegular } from "@fluentui/react-icons";
 
-export function FilterBoard() {
+export function Exploer() {
     const tabs: BlockTab[] = [
         {
             id: "repository",

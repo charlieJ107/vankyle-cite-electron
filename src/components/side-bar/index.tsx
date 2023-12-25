@@ -1,24 +1,25 @@
-import { makeStyles, mergeClasses, tokens } from "@fluentui/react-components";
+import { makeStyles, tokens } from "@fluentui/react-components";
 import { AppsAddInRegular, BoardRegular } from "@fluentui/react-icons";
-import { useState } from "react";
 import { SidebarIconButton } from "./side-bar-icon-button";
+import { SideBarNav } from "./context/tooltip-ref-context";
+import { useBoardDispatch } from "../../contexts/boards/board-context";
 
 export const useStyle = makeStyles({
     sideBar: {
         backgroundColor: tokens.colorBrandBackground2,
-        zIndex: 1
+        zIndex: 100
     }
 });
 
 export default function SideBar() {
-    const [tooltipRef, setTooltipRef] = useState<HTMLElement | null>(null);
     const style = useStyle();
+    const dispatchBoard = useBoardDispatch();
     return (
-        <nav ref={setTooltipRef} className={mergeClasses(style.sideBar, "rounded-r py-5 px-2 flex flex-col overflow-x-visible")}>
-            <SidebarIconButton tooltipRef={tooltipRef} icon={<BoardRegular />} content="Home" />
+        <SideBarNav className={style.sideBar}>
+            <SidebarIconButton icon={<BoardRegular />} content="Exploer" onClick={() => { dispatchBoard({ board: "exploer" }) }} />
             {/* TODO: Addins icons and extension system */}
-            <SidebarIconButton tooltipRef={tooltipRef} icon={<AppsAddInRegular />} content="Add Ins" />
-        </nav>
+            <SidebarIconButton icon={<AppsAddInRegular />} content="Add Ins" />
+        </SideBarNav>
     );
 
 }

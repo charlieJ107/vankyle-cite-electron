@@ -1,17 +1,17 @@
-import { Subtitle1, Text, Title2 } from "@fluentui/react-components";
+import { Subtitle1, Text, Title1 } from "@fluentui/react-components";
 import { Paper } from "../../../../models/paper";
 
 export function PaperDetails({ paper }: { paper: Paper }) {
     return (
         <article className="container bg-gray-100 p-2">
-            <Title2 block >{paper.title}</Title2>
-            <Subtitle1 block >Authors</Subtitle1>
-            <div className="flex flex-row flex-wrap">
+            <Title1 block >{paper.title}</Title1>
+            <Subtitle1 block className="mt-3">Authors</Subtitle1>
+            <div className="flex flex-row flex-wrap mt-1">
                 {paper.authors.map((author, index) => (
-                    <Text className="m-2 p-2 hover:bg-white" key={index}>{typeof author === "string" ? author : author.name}</Text>
+                    <Text className="p-2 mx-1 bg-white hover:bg-gray-300" key={index}>{typeof author === "string" ? author : author.name}</Text>
                 ))}
             </div>
-            <Subtitle1 block >Publisher</Subtitle1>
+            <Subtitle1 block className="mt-3">Publisher</Subtitle1>
         </article>
     );
-}
+} 

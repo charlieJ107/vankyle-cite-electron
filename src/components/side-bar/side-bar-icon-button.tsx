@@ -1,23 +1,34 @@
 import { Button, Tooltip, makeStyles, mergeClasses, tokens } from "@fluentui/react-components";
+import { useTooltipRef } from "./context/tooltip-ref-context";
+import React from "react";
 
 const useSideBarStyle = makeStyles({
     iconButtons: {
-        marginTop: tokens.spacingVerticalM,
+        marginTop: tokens.spacingVerticalXS,
     }
 });
 
 export function SidebarIconButton(
-    { className, tooltipRef, icon, content }:
+    { className, icon, content, onClick }:
         {
-            className?: string,
-            tooltipRef: HTMLElement | null,
-            icon: JSX.Element,
-            content: string
+            className?: string;
+            icon: JSX.Element;
+            content: string;
+            onClick?: React.MouseEventHandler<HTMLButtonElement>;
         }) {
     const style = useSideBarStyle();
+    const toolTipRef = useTooltipRef();
     return (
-        <Tooltip content={content} relationship="label" positioning="after" mountNode={tooltipRef}>
-            <Button className={mergeClasses(className, style.iconButtons)} icon={icon} size="large" />
+        <Tooltip content={content} relationship="label" positioning="after" mountNode={toolTipRef}>
+            <Button className={
+                mergeClasses(
+                    className,
+                    style.iconButtons,
+                )}
+                as="button"
+                onClick={onClick}
+                icon={icon} size="large"
+                appearance="subtle" />
         </Tooltip>
     );
 
