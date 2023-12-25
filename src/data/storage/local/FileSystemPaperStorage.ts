@@ -1,8 +1,9 @@
 import { IPaperStorage } from "../IPaperStorage";
-import fs from "fs";
 
 export class FileSystemPaperStorage implements IPaperStorage {
-    
+    async getPaperHrefs(id: string): Promise<string> {
+        throw new Error("Method not implemented.");
+    }
     async getPaperFile(id: string): Promise<Buffer> {
         throw new Error("Method not implemented.");
     }
