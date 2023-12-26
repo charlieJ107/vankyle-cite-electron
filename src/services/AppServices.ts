@@ -1,3 +1,6 @@
-export function registerServices() {
-    
+export class AppService {
+    constructor() {
+
+    }
+
 }
