@@ -1,35 +1,36 @@
 import { BrandVariants, FluentProvider, Theme, createDarkTheme, createLightTheme, makeStyles, mergeClasses } from "@fluentui/react-components";
 import { createContext, useContext, useState } from "react";
 
-const vankylePurple: BrandVariants = {
-    10: "#040205",
-    20: "#1C1323",
-    30: "#2F1D3E",
-    40: "#3E2555",
-    50: "#4F2D6D",
-    60: "#603587",
-    70: "#713DA0",
-    80: "#8345BB",
-    90: "#954ED7",
-    100: "#A35EE3",
-    110: "#AF71E7",
-    120: "#BB83EA",
-    130: "#C696EE",
-    140: "#D1A8F1",
-    150: "#DCBBF5",
-    160: "#E6CDF8"
+const vankyleGrayTheme: BrandVariants = {
+    10: "#010306",
+    20: "#0B1922",
+    30: "#112936",
+    40: "#1A3643",
+    50: "#26424F",
+    60: "#334F5B",
+    70: "#405C67",
+    80: "#4D6973",
+    90: "#5C7780",
+    100: "#6A858C",
+    110: "#7A9399",
+    120: "#8AA1A6",
+    130: "#9AAFB3",
+    140: "#ABBEC0",
+    150: "#BDCCCE",
+    160: "#CFDBDC"
 };
 
 const lightTheme: Theme = {
-    ...createLightTheme(vankylePurple),
+    ...createLightTheme(vankyleGrayTheme),
 };
 
 const darkTheme: Theme = {
-    ...createDarkTheme(vankylePurple),
+    ...createDarkTheme(vankyleGrayTheme),
 };
 
-darkTheme.colorBrandForeground1 = vankylePurple[110];
-darkTheme.colorBrandForeground2 = vankylePurple[120];
+
+darkTheme.colorBrandForeground1 = vankyleGrayTheme[110];
+darkTheme.colorBrandForeground2 = vankyleGrayTheme[120];
 
 const useRootStyle = makeStyles({
     root: {
