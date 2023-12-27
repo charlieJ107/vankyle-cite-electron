@@ -1,3 +1,9 @@
 
-export function handleDropFile() {
+class DropFileService {
+
+    constructor() {
+
+    }
+
+
 }
