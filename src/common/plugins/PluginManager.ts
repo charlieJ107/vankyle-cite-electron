@@ -1,61 +1,95 @@
 import fs from "fs/promises";
 import path from "path";
-import { IConfig } from "../config/IConfig";
-import { IPlugin, IPluginManifest } from "@charliej107/vankyle-cite-plugin"
+import { IConfig, IPluginConfig } from "../config/ConfigInterfaces";
+import { IPlugin, IPluginManifest } from "@charliej107/vankyle-cite-plugin";
 
 export class PluginManager {
-    private config: IConfig;
-
+    private config: IPluginConfig;
+    private installedPlugins: IPluginManifest[];
+    private enabledPlugins: IPlugin[];
     constructor(config: IConfig) {
-        this.config = config;
+        this.config = config.plugins;
+        this.installedPlugins = [];
+        this.enabledPlugins = [];
     }
 
-    private installedPlugins: IPluginManifest[] = []
+    public async init() {
+        await this.scanPlugins();
+        if (this.config.enabled_plugins.length > 0) {
+            const pluginPromises = this.installedPlugins.filter(
+                (menifest) => menifest.uuid in this.config.enabled_plugins)
+                .map(async (manifest) => await this.getPluginFromPluginManifest(manifest));
+            this.enabledPlugins = await Promise.all(pluginPromises);
+        }
+    }
+
+    public async getInstalledPlugins(): Promise<IPluginManifest[]> {
+        return this.installedPlugins;
+    }
+
+    public async enablePlugin(plugin_manifest: IPluginManifest): Promise<void> {
+        const plugin: IPlugin = await this.getPluginFromPluginManifest(plugin_manifest);
+        this.enabledPlugins.push(plugin);
+
+    }
+
+    public async getEnabledPlugins(): Promise<IPlugin[]> {
+        return this.enabledPlugins;
+    }
+
+
 
     private async scanPlugins() {
 
         const items = await fs.readdir(this.config.plugin_dir);
 
-        for(item in items){
-            if(await this.isValidPlugin(item)){
-                this.installedPlugins.push(item)
+        const promises: Promise<IPluginManifest | null>[] = items.map(async (item) => {
+            if (await this.isValidPlugin(item)) {
+                return await this.getPluginManifestFromPluginPath(item);
             }
-        }
+            return null;
+        });
 
+        const validPlugins: (IPluginManifest | null)[] = await Promise.all(promises);
+        this.installedPlugins = validPlugins.filter((plugin) => plugin !== null) as IPluginManifest[];
     }
-    public loadPlugin(manifest: IPluginManifest) {
 
-    }
     private async isValidPlugin(dir_or_file: string): Promise<boolean> {
         const itemPath = path.join(this.config.plugin_dir, dir_or_file);
-        if (fs.statSync(itemPath).isDirectory()) {
-            const manifestPath = path.join(itemPath, "manifest.json");
-            if (fs.existsSync(manifestPath)) {
-                fs.readFile(manifestPath, { encoding: 'utf-8' }, (err, manifestContent) => {
-                    if (err) {
-                        console.error(`Error loading plugin ${dir_or_file}:`, err);
-                        return false;
-                    }
-                    try {
-                        const manifest: IPluginManifest = JSON.parse(manifestContent);
-                        if (this.isValidManifest(manifest)) {
-                            const entryPath = path.join(itemPath, manifest.entry);
-                            if (fs.existsSync(entryPath) && fs.statSync(entryPath).isFile() && entryPath.endsWith('.js')) {
-                                return true;
-                            } else {
-                                console.error(`Plugin entry file does not exist: ${entryPath}`);
-                            }
-                        }
-                    } catch (error) {
-                        console.error(`Error loading plugin ${dir_or_file}:`, error);
-                    }
-                });
+        try {
+            const itemStats = await fs.stat(itemPath);
+            if (itemStats.isDirectory()) {
+                const manifest = await this.getPluginManifestFromPluginPath(itemPath);
+                if (this.isValidManifest(manifest)) {
+                    const entryPath = path.join(itemPath, manifest.entry);
 
+                    const entryStats = await fs.stat(entryPath);
+                    if (entryStats.isFile() && entryPath.endsWith('.js')) {
+                        return true;
+                    } else {
+                        console.error(`Plugin entry file does not exist or is not a .js file: ${entryPath}`);
+                    }
+                }
             }
+        } catch (error) {
+            console.error(`Error checking plugin directory:`, error);
         }
+        return false; // Default to false
     }
 
-    private isValidManifest(manifest: IPluginManifest) {
+    private async getPluginManifestFromPluginPath(plugin_path: string): Promise<IPluginManifest> {
+        const manifestPath = path.join(plugin_path, 'manifest.json');
+        const manifestContent = await fs.readFile(manifestPath, 'utf-8');
+        const manifest: IPluginManifest = JSON.parse(manifestContent);
+        return manifest;
+    }
+    private async getPluginFromPluginManifest(manifest: IPluginManifest): Promise<IPlugin> {
+        const pluginPath = path.join(this.config.plugin_dir, manifest.uuid, manifest.entry);
+        const plugin = await import(pluginPath);
+        return plugin;
+    }
+
+    private isValidManifest(manifest: IPluginManifest): boolean {
         const requiredFields = ['manifest-version', 'name', 'uid', 'version', 'entry'];
 
         for (const field of requiredFields) {
@@ -66,6 +100,7 @@ export class PluginManager {
         }
 
         // Check if the entry field points to a .js file
+        // Duplicate check with isValidPlugin, but it's better to be safe than sorry
         if (!manifest.entry.endsWith('.js')) {
             console.error(`Plugin entry field does not point to a .js file: ${manifest.entry}`);
             return false;
