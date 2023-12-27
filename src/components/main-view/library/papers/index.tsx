@@ -1,4 +1,4 @@
-import { usePaperContext } from "../../../../contexts/papers/paper-context";
+import { usePaperContext } from "../../../contexts/papers/paper-context";
 import PaperItem from "./paper-item";
 
 export default function PapersList() {

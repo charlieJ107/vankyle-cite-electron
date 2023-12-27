@@ -1,8 +1,8 @@
 
 import { mergeClasses } from "@fluentui/react-components";
 import { Exploer } from "./exploer";
-import { BoardContextState } from "../../../contexts/boards/board-context-types";
-import { useBoardState } from "../../../contexts/boards/board-context";
+import { BoardContextState } from "../../contexts/boards/board-context-types";
+import { useBoardState } from "../../contexts/boards/board-context";
 
 
 function SwitchBoards({ state }: { state: BoardContextState }) {

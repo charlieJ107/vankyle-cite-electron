@@ -1,8 +1,8 @@
 import { createContext, useContext, useReducer } from "react";
 import { paperContextReducer } from "./paper-reducer";
 import { PaperContextAction, PaperContextState } from "./paper-context-types";
-import { Author } from "../../models/author";
-import { Paper } from "../../models/paper";
+import { Author } from "../../../models/author";
+import { Paper } from "../../../models/paper";
 
 const _dummyAuthorsForDev: Author[] = [
     // Generate dummy 3 authors for development

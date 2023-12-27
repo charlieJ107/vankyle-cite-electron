@@ -1,4 +1,4 @@
-import { AppContextProvider } from './contexts/app-context-provider';
+import { AppContextProvider } from './components/contexts/app-context-provider';
 import Footer from './components/footer';
 import Header from './components/header';
 import MainView from './components/main-view';

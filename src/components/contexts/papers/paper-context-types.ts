@@ -1,4 +1,4 @@
-import { Paper } from "../../models/paper";
+import { Paper } from "../../../models/paper";
 
 export interface PaperContextState {
     filteredPapers: Paper[];

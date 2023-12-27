@@ -1,6 +1,6 @@
 import { Card, CardHeader, makeStyles, mergeClasses, tokens, typographyStyles } from "@fluentui/react-components";
 import { Paper } from "../../../../models/paper";
-import { usePaperDispatch } from "../../../../contexts/papers/paper-context";
+import { usePaperDispatch } from "../../../contexts/papers/paper-context";
 
 const usePaperItemStyle = makeStyles({
     root: {

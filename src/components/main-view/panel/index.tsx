@@ -1,9 +1,9 @@
 import { Button, SelectTabData, SelectTabEvent, Tab, TabList, TabValue, mergeClasses } from "@fluentui/react-components";
 import { DetailsPanel } from "./details";
-import { usePaperContext, usePaperDispatch } from "../../../contexts/papers/paper-context";
+import { usePaperContext, usePaperDispatch } from "../../contexts/papers/paper-context";
 import { DismissRegular } from "@fluentui/react-icons";
 import { useState } from "react";
-import { BlockTab } from "../../../contexts/tabs/tabs-context-types";
+import { BlockTab } from "../../contexts/tabs/tabs-context-types";
 
 
 export default function Panel({ className }: { className?: string }) {
