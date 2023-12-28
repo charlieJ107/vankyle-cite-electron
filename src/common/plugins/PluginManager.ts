@@ -75,9 +75,16 @@ export class PluginManager {
 
                     const entryStats = await fs.stat(entryPath);
                     if (entryStats.isFile() && entryPath.endsWith('.js')) {
-                        return true;
+                        const plugin = await this.getPluginFromPluginManifest(manifest);
+                        if (this.isIPlugin(plugin)) {
+                            return true;
+                        } else {
+                            console.error(`Plugin entry file does not export a plugin: ${entryPath}`);
+                            return false;
+                        }
                     } else {
                         console.error(`Plugin entry file does not exist or is not a .js file: ${entryPath}`);
+                        return false;
                     }
                 }
             }
@@ -85,6 +92,16 @@ export class PluginManager {
             console.error(`Error checking plugin directory:`, error);
         }
         return false; // Default to false
+    }
+
+    private isIPlugin(plugin: any): plugin is IPlugin {
+        if (plugin !== undefined) {
+            if (plugin.init !== undefined) {
+                return true;
+            }
+        }
+        return false;
+
     }
 
     private async getPluginManifestFromPluginPath(plugin_path: string): Promise<IPluginManifest> {
