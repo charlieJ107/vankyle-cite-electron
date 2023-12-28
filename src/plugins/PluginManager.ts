@@ -1,6 +1,6 @@
 import fs from "fs/promises";
 import path from "path";
-import { IConfig, IPluginConfig } from "../config/ConfigInterfaces";
+import { IPluginConfig } from "../common/config/ConfigInterfaces";
 import { IPlugin, IPluginManifest, IPluginService } from "@charliej107/vankyle-cite-plugin";
 import { PluginServiceProvider } from "./PluginServiceProvider";
 
@@ -10,8 +10,8 @@ export class PluginManager {
     private enabledPlugins: IPlugin[];
     private pluginServiceProvider: PluginServiceProvider;
     private pluginInstances: { [key: string]: IPluginService } = {};
-    constructor(config: IConfig, pluginServiceProvider: PluginServiceProvider) {
-        this.config = config.plugins;
+    constructor(config: IPluginConfig, pluginServiceProvider: PluginServiceProvider) {
+        this.config = config;
         this.installedPlugins = [];
         this.enabledPlugins = [];
         this.pluginServiceProvider = pluginServiceProvider;
@@ -26,7 +26,7 @@ export class PluginManager {
             this.enabledPlugins = await Promise.all(pluginPromises);
         }
     }
-    public async loadPlugins() {
+    public async loadEnabledPlugins() {
         for (const plugin of this.enabledPlugins) {
             const instance = this.pluginServiceProvider.resolveService(plugin);
             instance.init();
