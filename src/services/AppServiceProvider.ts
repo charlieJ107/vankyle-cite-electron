@@ -8,9 +8,17 @@ export class AppServiceProvider {
 
     }
 
+    public hello(){
+        console.log("hello")
+    }
+
     public init() {
         // TODOs: 
         // 订阅后台服务加载事件
         // 订阅插件加载事件
+    }
+
+    public helloDrag(event: DragEvent) {
+        console.log(event.dataTransfer?.files)
     }
 }
