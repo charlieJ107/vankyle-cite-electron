@@ -29,4 +29,37 @@ export class DatabaseService implements IService {
         return result === undefined ? null : result as T;
     }
 
+    public async getList<T extends DataModel>(dataModelName: DataModelName, filter?: (model: T) => boolean): Promise<T[]> {
+        const resultPrmises: Promise<DataModel[]>[] = [];
+        for (const database_datamodel of this.databases.get(dataModelName)!) {
+            const database = database_datamodel as IDatabase<T>;
+            const resultPromise = database.getList(filter);
+            resultPrmises.push(resultPromise);
+        }
+
+        const results = await Promise.all(resultPrmises);
+        return results.reduce((previousValue, currentValue) => previousValue.concat(currentValue), []) as T[];
+    }
+
+    public async save<T extends DataModel>(dataModelName: DataModelName, model: T): Promise<void> {
+        const resultPrmises: Promise<void>[] = [];
+        for (const database_datamodel of this.databases.get(dataModelName)!) {
+            const database = database_datamodel as IDatabase<T>;
+            const resultPromise = database.save(model);
+            resultPrmises.push(resultPromise);
+        }
+
+        await Promise.all(resultPrmises);
+    }
+
+    public async delete<T extends DataModel>(dataModelName: DataModelName, id: string): Promise<void> {
+        const resultPrmises: Promise<void>[] = [];
+        for (const database_datamodel of this.databases.get(dataModelName)!) {
+            const database = database_datamodel as IDatabase<T>;
+            const resultPromise = database.delete(id);
+            resultPrmises.push(resultPromise);
+        }
+
+        await Promise.all(resultPrmises);
+    }
 }
