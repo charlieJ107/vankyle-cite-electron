@@ -3,4 +3,6 @@
  */
 
 export function initRpc() {
+
 }
+

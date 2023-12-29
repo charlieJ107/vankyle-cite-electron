@@ -1,6 +1,6 @@
 import { IMessage } from "./IMessage";
 
-export interface IRPCClient {
+export interface IRPCClient<TMessage extends IMessage> {
     init(): void;
-    request(message: IMessage): Promise<IMessage>;
+    request(message: TMessage): Promise<TMessage>;
 }

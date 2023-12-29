@@ -1,6 +1,7 @@
+import { IMessage } from "./IMessage";
 import { IRPCServer } from "./IRPCServer";
 
-export class MessagePortRPCServer implements IRPCServer {
+export class MessagePortRPCServer<TMessage extends IMessage> implements IRPCServer<TMessage> {
     private messagePort: MessagePort;
     constructor(messagePort: MessagePort) {
         this.messagePort = messagePort;
@@ -10,7 +11,7 @@ export class MessagePortRPCServer implements IRPCServer {
             this.handle(event.data);
         };
     }
-    handle(message: any): void {
+    handle(message: TMessage): void {
         console.log("MessagePortRPCServer.handle: " + JSON.stringify(message));
         this.messagePort.postMessage(message);
     }
