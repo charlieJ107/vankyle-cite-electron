@@ -1,14 +1,14 @@
-import { Paper } from "../../../models/paper";
+import { BaseDataModel } from "../../../models/DataModel";
 import { IDatabase } from "../IDatabase";
 import fs from "fs";
 import path from "path";
 
-export class JsonFilePaperDatabase implements IDatabase<Paper> {
+export class JsonFileDatabase<T extends BaseDataModel> implements IDatabase<T> {
     private dataDir: string;
-    constructor(dataDir: string) {
+    constructor(dataDir: string = path.join(__dirname, "data")) {
         this.dataDir = dataDir;
     }
-    private buffer: { [key: string]: Paper; } = {};
+    private buffer: { [key: string]: T; } = {};
 
     private async updateBuffer() {
         return await fs.readFile(path.join(this.dataDir, "data.json"), "utf8", (err: NodeJS.ErrnoException | null, jsonString: string) => {
@@ -29,16 +29,16 @@ export class JsonFilePaperDatabase implements IDatabase<Paper> {
         });
     }
 
-    async get(id: string): Promise<Paper | null> {
+    async get(id: string | number): Promise<T | null> {
         this.updateBuffer();
         return this.buffer[id];
     }
-    async getList(filter?: ((model: Paper) => boolean) | undefined): Promise<Paper[]> {
+    async getList(filter?: ((model: T) => boolean) | undefined): Promise<T[]> {
         this.updateBuffer();
         return Promise.resolve(Object.values(this.buffer).filter(filter || (() => true)));
     }
-    async save(paper: Paper): Promise<void> {
-        this.buffer[paper._id] = paper;
+    async save(model: T): Promise<void> {
+        this.buffer[model._id] = model;
         return await this.saveBuffer();
 
     }

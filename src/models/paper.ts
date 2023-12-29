@@ -1,8 +1,9 @@
+import { BaseDataModel } from "./DataModel";
 import { Author } from "./author";
 import { Group } from "./group";
 import { Tag } from "./tag";
 
-export interface Paper {
+export interface Paper extends BaseDataModel {
     _id: number;
     title: string;
     authors: Author[] | string[]; // author id
