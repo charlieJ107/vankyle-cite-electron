@@ -1,6 +1,6 @@
 /// <reference types="vite-plugin-electron/electron-env" />
 
-import { AppServiceProvider } from "./services/AppServiceProvider"
+import { AppServiceProvider } from "./components/contexts/service/AppServiceProvider"
 
 declare namespace NodeJS {
   interface ProcessEnv {
@@ -24,6 +24,8 @@ declare namespace NodeJS {
 }
 
 // Used in Renderer process, expose in `preload.ts`
-interface Window {
-  AppServiceProvider: AppServiceProvider
+declare global {
+  interface Window {
+    AppServiceProvider: AppServiceProvider
+  }
 }
