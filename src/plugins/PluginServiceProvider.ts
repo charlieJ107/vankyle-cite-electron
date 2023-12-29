@@ -12,7 +12,7 @@ export class PluginServiceProvider {
         }
     }
 
-    resolveService<T extends IPlugin>(target: new (...args: any[]) => T): T {
+    resolveService<T extends IPlugin>(target: new (...args: IPluginService[]) => T): T {
         const paramNames = this.getParamNames(target);
 
         const dependencies = paramNames.map((name: string) => {

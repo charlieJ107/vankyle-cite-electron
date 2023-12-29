@@ -29,7 +29,7 @@ export class PluginManager {
     public async loadEnabledPlugins() {
         for (const plugin of this.enabledPlugins) {
             const instance = this.pluginServiceProvider.resolveService(plugin);
-            instance.init();
+            await instance.load();
             this.pluginInstances[plugin.toString()] = instance;
         }
     }
