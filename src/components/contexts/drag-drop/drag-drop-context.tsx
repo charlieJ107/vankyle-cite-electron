@@ -1,18 +1,19 @@
 import { useEffect } from "react";
 
 export function DropEventListenerContextProvider({ children }: { children: JSX.Element | JSX.Element[] }) {
-    console.log(window.AppServiceProvider);
-    window.AppServiceProvider.hello();
     useEffect(() => {
-        // window.AppServiceProvider.hello();
+        document.addEventListener("dragover", (event) => {
+            // prevent default to allow drop
+            event.preventDefault();
+        });
         document.addEventListener("drop", (event) => {
             event.preventDefault();
-            event.stopPropagation();
-            // ipcRenderer.send("drop-file", event.dataTransfer?.files[0].path);
-            // fileHandler(event);
+            console.log("drop");
+            // window.AppServiceProvider.dragHandler(event);
         });
         return () => {
-            document.removeEventListener("drop", () => { });
+            document.removeEventListener("drop", (_event) => { });
+            document.removeEventListener("dragover", (_event) => { });
         }
     }, []);
     return (
