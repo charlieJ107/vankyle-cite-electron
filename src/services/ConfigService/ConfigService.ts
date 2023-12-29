@@ -13,7 +13,7 @@ const defaultConfig: IConfig = {
 export class ConfigService implements IService {
     private rootPath: string;
     private config: IConfig;
-    constructor(rootPath: string) {
+    constructor(rootPath: string = path.join(__dirname, "config")) {
         this.rootPath = rootPath;
         this.config = defaultConfig;
         if (!(fs.existsSync(rootPath))) {
