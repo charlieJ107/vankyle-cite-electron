@@ -1,16 +1,33 @@
-import { IPaperStorage } from "../IPaperStorage";
+import { IFileStorage } from "../IFileStorage";
+import fs from "fs";
 
-export class FileSystemPaperStorage implements IPaperStorage {
-    async getPaperHrefs(id: string): Promise<string> {
-        throw new Error("Method not implemented.");
+export class LocalFileSystemStorage implements IFileStorage {
+    private rootPath: string;
+    constructor(rootPath: string) {
+        if (!fs.existsSync(rootPath)) {
+            fs.mkdirSync(rootPath);
+        }
+        this.rootPath = rootPath;
     }
-    async getPaperFile(id: string): Promise<Buffer> {
-        throw new Error("Method not implemented.");
+    getPath(id: string): Promise<string> {
+        // get file from rootPath, file name is id
+        return Promise.resolve(this.rootPath + "/" + id);
     }
-    savePaperFile(id: string, file: Buffer): Promise<void> {
-        throw new Error("Method not implemented.");
+    get(id: string): Promise<Buffer> {
+        // get file from rootPath, file name is id
+        return Promise.resolve(fs.readFileSync(this.rootPath + "/" + id));
     }
-    deletePaperFile(id: string): Promise<void> {
-        throw new Error("Method not implemented.");
+    save(id: string, file: Buffer): Promise<void> {
+        // save file to rootPath, file name is id
+        return Promise.resolve(fs.writeFileSync(this.rootPath + "/" + id, file));
     }
+    saveByPath(id: string, path: string): Promise<void> {
+        // save file to rootPath, file name is id
+        return Promise.resolve(fs.copyFileSync(path, this.rootPath + "/" + id));
+    }
+    delete(id: string): Promise<void> {
+        // delete file from rootPath, file name is id
+        return Promise.resolve(fs.unlinkSync(this.rootPath + "/" + id));
+    }
+
 }
