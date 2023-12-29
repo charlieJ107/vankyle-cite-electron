@@ -6,8 +6,8 @@ export class AppServiceManager {
 
     }
     private services: Map<string, IService> = new Map<string, IService>();
-    public reigisterService() {
-
+    public reigisterService(name: string, service: IService) {
+        this.services.set(name, service);
     }
 
 }
