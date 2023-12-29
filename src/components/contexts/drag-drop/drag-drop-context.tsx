@@ -2,18 +2,18 @@ import { useEffect } from "react";
 
 export function DropEventListenerContextProvider({ children }: { children: JSX.Element | JSX.Element[] }) {
     useEffect(() => {
-        document.addEventListener("dragover", (event) => {
-            // prevent default to allow drop
-            event.preventDefault();
-        });
-        document.addEventListener("drop", (event) => {
+        const dragOverHandler = (event: DragEvent) => event.preventDefault(); // prevent default to allow drop
+        const dropHandler = (event: DragEvent) => {
             event.preventDefault();
             console.log("drop");
             // window.AppServiceProvider.dragHandler(event);
-        });
+        }
+
+        document.addEventListener("dragover", dragOverHandler);
+        document.addEventListener("drop", dropHandler);
         return () => {
-            document.removeEventListener("drop", (_event) => { });
-            document.removeEventListener("dragover", (_event) => { });
+            document.removeEventListener("drop", dragOverHandler);
+            document.removeEventListener("dragover", dropHandler);
         }
     }, []);
     return (
