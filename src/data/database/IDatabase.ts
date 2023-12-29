@@ -1,4 +1,6 @@
-export interface IDatabase<T_ModelType> {
+import { DataModel } from "../../models/DataModel";
+
+export interface IDatabase<T_ModelType extends DataModel> {
     get(id: string): Promise<T_ModelType | null>;
     getList(filter?: (model: T_ModelType) => boolean): Promise<T_ModelType[]>;
     save(model: T_ModelType): Promise<void>;
