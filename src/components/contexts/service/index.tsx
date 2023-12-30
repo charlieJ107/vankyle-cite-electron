@@ -1,5 +1,6 @@
-import { IService } from "../../../services/IService";
+import { IAppService } from "../../../services/IAppService";
+import { AppServiceProxy } from "./AppServiceProxy";
 
-export function useAppService(name: string): IService {
-    return window.AppServiceProvider.getService(name);
+export async function useAppService<ServiceType extends IAppService>(name: string): Promise<AppServiceProxy<ServiceType>> {
+    return await window.AppServiceProvider.getService<ServiceType>(name);
 }

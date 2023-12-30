@@ -1,12 +1,24 @@
-export interface IMessageHeader {
-    type: string;
-    target: string;
-    id: string;
+export interface RPCMessageHeader {
+    type: "request" | "response";
+    from: string;
+    id: number;
     method: string;
-    params: any;
+    service: string;
 }
 
-export interface IMessage {
-    header: IMessageHeader;
+export interface RPCMessage {
+    header: RPCMessageHeader;
     body: any;
+}
+
+export interface RPCRequestMessage extends RPCMessage {
+    header: RPCMessageHeader & {
+        type: "request";
+    };
+}
+
+export interface RPCResponseMessage extends RPCMessage {
+    header: RPCMessageHeader & {
+        type: "response";
+    };
 }

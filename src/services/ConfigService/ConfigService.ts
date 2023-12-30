@@ -1,5 +1,5 @@
 import { IConfig } from "../../common/config/ConfigInterfaces";
-import { IService } from "../IService";
+import { IService } from "../../common/rpc/IService";
 import fs from "fs";
 import path from "path";
 

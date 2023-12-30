@@ -7,6 +7,7 @@ export function DropEventListenerContextProvider({ children }: { children: JSX.E
             event.preventDefault();
             console.log("drop");
             // window.AppServiceProvider.dragHandler(event);
+            // TODO: handle drop
         }
 
         document.addEventListener("dragover", dragOverHandler);
