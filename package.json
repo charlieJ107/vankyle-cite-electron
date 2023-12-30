@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@charliej107/vankyle-cite-plugin": "file:vankyle-cite-plugin",
+    "@charliej107/vankyle-cite-rpc": "file:vankyle-cite-rpc",
     "@fluentui/react-components": "^9.43.3",
     "@fluentui/react-icons": "^2.0.224",
     "echarts": "^5.4.3",

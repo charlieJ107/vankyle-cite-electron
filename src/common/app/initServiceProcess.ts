@@ -1,8 +1,6 @@
-import { utilityProcess, MessageChannelMain, ipcMain } from "electron";
+import { utilityProcess, MessageChannelMain } from "electron";
+import { RPCMessage } from "@charliej107/vankyle-cite-rpc"
 import path from 'node:path'
-import { RPCMessage } from "../rpc/IMessage";
-import { MessagePortRPCClient } from "../rpc/MessagePortRPCClient";
-import { IRPCClient } from "../rpc/IRPCClient";
 
 export interface ServiceProcessInitialMessage extends RPCMessage {
     header: {

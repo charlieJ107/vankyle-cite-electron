@@ -1,7 +1,6 @@
 import { MessagePortMain, MessageEvent, MessageChannelMain } from "electron";
-import { RPCMessage } from "../common/rpc/IMessage";
+import { IServiceManager, RPCMessage } from "@charliej107/vankyle-cite-rpc";
 import { IAppService } from "./IAppService";
-import { IServiceManager } from "../common/rpc/IServiceManager";
 
 
 export interface RPCServer {

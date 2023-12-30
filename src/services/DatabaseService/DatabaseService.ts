@@ -5,7 +5,7 @@ import { Author } from "../../models/author";
 import { Group } from "../../models/group";
 import { Paper } from "../../models/paper";
 import { Tag } from "../../models/tag";
-import { IService } from "../../common/rpc/IService";
+import { IService } from "@charliej107/vankyle-cite-rpc";
 // 数据库服务，用于管理和封装数据库接口IDatabase的实例，不同的数据类型对应不同的数据库实例
 export class DatabaseService implements IService {
     constructor() {

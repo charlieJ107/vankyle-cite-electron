@@ -1,9 +1,6 @@
-
-import { RPCMessage } from "../../../common/rpc/IMessage";
-import { IServiceProvider } from "../../../common/rpc/IServiceProvider";
 import { IAppService } from "../../../services/IAppService";
 import { AppServiceProxy } from "./AppServiceProxy";
-
+import { IServiceProvider, RPCMessage } from "@charliej107/vankyle-cite-rpc";
 /**
  * AppServiceProvider
  * 给renderer进程调用的前台实例，向前台暴露安全的API

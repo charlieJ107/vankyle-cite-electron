@@ -1,5 +1,5 @@
 import { IConfig } from "../../common/config/ConfigInterfaces";
-import { IService } from "../../common/rpc/IService";
+import { IService } from "@charliej107/vankyle-cite-rpc";
 import fs from "fs";
 import path from "path";
 

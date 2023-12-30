@@ -1,4 +1,4 @@
-import { IService } from "../common/rpc/IService";
+import { IService } from "@charliej107/vankyle-cite-rpc"
 
 export class ServiceProxy<T extends IService> {
     private service: T;

@@ -1,5 +1,4 @@
-import { RPCMessage } from "../../../common/rpc/IMessage";
-import { IServiceProxy } from "../../../common/rpc/IServiceProxy";
+import { IServiceProxy, RPCMessage } from "@charliej107/vankyle-cite-rpc";
 import { IAppService } from "../../../services/IAppService";
 
 /**
