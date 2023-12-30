@@ -2,7 +2,7 @@ import fs from "fs/promises";
 import path from "path";
 import { IPluginConfig } from "../common/config/ConfigInterfaces";
 import { IPlugin, IPluginManifest, IPluginService } from "@charliej107/vankyle-cite-plugin";
-import { PluginServiceProvider } from "./PluginServiceProvider";
+import { PluginServiceProvider } from "../../vankyle-cite-plugin/src/PluginServiceProvider";
 
 export class PluginManager {
     private config: IPluginConfig;

@@ -4,7 +4,7 @@
 
 import { IPluginConfig } from "../common/config/ConfigInterfaces";
 import { PluginManager } from "./PluginManager";
-import { PluginServiceProvider } from "./PluginServiceProvider";
+import { PluginServiceProvider } from "../../vankyle-cite-plugin/src/PluginServiceProvider";
 import path from 'path';
 
 // TODO 初始化插件服务进程的RPC接口
