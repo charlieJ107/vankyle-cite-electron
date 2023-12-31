@@ -7,16 +7,20 @@ import { IServiceProvider, RPCMessage } from "@charliej107/vankyle-cite-rpc";
  */
 export class AppServiceProvider implements IServiceProvider {
     private whoami = "app-service-provider";
-    private appServiceManagerMessagePort: MessagePort;
+    private appServiceManagerMessagePort: MessagePort | null;
     private pendingServiceRequests: Map<string, {
         resolve: (value: AppServiceProxy<IAppService> | PromiseLike<AppServiceProxy<IAppService>>) => void
         reject: (reason?: any) => void
     }> = new Map();
 
-    constructor(messagePort: MessagePort) {
+    constructor() { this.appServiceManagerMessagePort = null; }
+
+    public init(messagePort: MessagePort) {
         this.appServiceManagerMessagePort = messagePort;
         this.appServiceManagerMessagePort.onmessage = this.handleResponse.bind(this);
+        console.log('AppServiceProvider initialized');
     }
+
 
     async getService<TService extends IAppService>(service_name: string): Promise<AppServiceProxy<TService>> {
         return new Promise<AppServiceProxy<TService>>((resolve, reject) => {
@@ -35,6 +39,9 @@ export class AppServiceProvider implements IServiceProvider {
     }
 
     private sendServiceRequest(message: RPCMessage) {
+        if (!this.appServiceManagerMessagePort) {
+            throw new Error('AppServiceManager MessagePort not initialized');
+        }
         this.appServiceManagerMessagePort.postMessage(message);
     }
 
