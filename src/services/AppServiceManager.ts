@@ -20,6 +20,12 @@ export class AppServiceManager implements IServiceManager<IAppService>{
 
     private async handleMessage(event: MessageEvent) {
         const message = event.data as RPCMessage;
+        console.log(`AppServiceManager received message from ${message.header.from} \n Message: ${JSON.stringify(message)}`);
+        if (!this.targets.has(message.header.from)) {
+            console.warn(`AppServiceManager received message from unknown target ${message.header.from}`);
+            return;
+        }
+
         switch (message.header.type) {
             case "request":
                 await this.handleRequest(message);
@@ -89,7 +95,17 @@ export class AppServiceManager implements IServiceManager<IAppService>{
     }
 
     public registerServiceProvider(name: string, target: MessagePortMain) {
-        target.on("message", this.handleMessage.bind(this));
+        console.log(`AppServiceManager received service provider ${name}`);
+        if (this.targets.has(name)) {
+            console.warn(`AppServiceManager already has service provider ${name}`);
+        }
+        target.on("message", (e) => {
+            console.log(`AppServiceManager received message from ${name}`);
+            this.handleMessage(e)
+        });
+        target.on("close", () => {
+            this.targets.delete(name);
+        });
         this.targets.set(name, target);
     }
 

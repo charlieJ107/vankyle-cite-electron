@@ -7,7 +7,7 @@ import { Paper } from "../../models/paper";
 import { Tag } from "../../models/tag";
 import { IAppService } from "../IAppService";
 import { MessagePortMain } from "electron";
-
+import path from "path";
 
 /**
  * 数据库服务，用于管理和封装数据库接口IDatabase的实例，不同的数据类型对应不同的数据库实例
@@ -15,16 +15,17 @@ import { MessagePortMain } from "electron";
  */
 export class DatabaseService implements IAppService {
     constructor() {
+        this.reigisterDatabase<Paper>(new JsonFileDatabase<Paper>(path.join(__dirname, "paper.json")), "Paper");
+        this.reigisterDatabase<Author>(new JsonFileDatabase<Author>( path.join(__dirname, "author.json") ), "Author");
+        this.reigisterDatabase<Group>(new JsonFileDatabase<Group>(path.join(__dirname, "group.json")), "Group");
+        this.reigisterDatabase<Tag>(new JsonFileDatabase<Tag>(path.join(__dirname, "tag.json")), "Tag");
         console.log('DatabaseService initialized');
     }
 
     private databases: Map<string, IDatabase<any>[]> = new Map<string, IDatabase<any>[]>();
 
     init = async (_messagePort: MessagePortMain) => {
-        this.reigisterDatabase<Paper>(new JsonFileDatabase<Paper>(), "Paper");
-        this.reigisterDatabase<Author>(new JsonFileDatabase<Author>(), "Author");
-        this.reigisterDatabase<Group>(new JsonFileDatabase<Group>(), "Group");
-        this.reigisterDatabase<Tag>(new JsonFileDatabase<Tag>(), "Tag");
+        
     }
 
     public reigisterDatabase<T extends BaseDataModel>(database: IDatabase<T>, dataModelName: DataModelName) {

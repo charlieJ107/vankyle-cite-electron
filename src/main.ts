@@ -1,4 +1,4 @@
-import { app, BrowserWindow, MessageChannelMain } from 'electron'
+import { app, BrowserWindow, MessageChannelMain, UtilityProcess } from 'electron'
 import { initAppWindow } from './common/app/initAppWindow'
 import { initServiceProcess } from './common/app/initServiceProcess';
 import { initPlugins } from './common/app/initPlugins';
@@ -21,12 +21,10 @@ app.on('activate', () => {
   }
 })
 
-function init() {
-  const serviceProcess = initServiceProcess();
-  const appWindow = initAppWindow();
-  const pluginsProcess = initPlugins();
 
-  // AppServiceProvider and AppServiceManager
+function initAppServiceMessageChannel(appWindow: BrowserWindow, serviceProcess: UtilityProcess) {
+  const appServiceMessageChannel = new MessageChannelMain();
+  appWindow.webContents.postMessage('init-service-provider', null, [appServiceMessageChannel.port1]);
   const registerAppServiceProviderMessage: RPCMessage = {
     header: {
       type: "request",
@@ -37,10 +35,20 @@ function init() {
     },
     body: null,
   };
+  serviceProcess.postMessage(registerAppServiceProviderMessage, [appServiceMessageChannel.port2]);
 
-  const appServiceMessageChannel = new MessageChannelMain();
-  serviceProcess.postMessage(registerAppServiceProviderMessage, [appServiceMessageChannel.port1]);
-  appWindow.webContents.postMessage('init-service-provider', null, [appServiceMessageChannel.port2]);
+}
+
+function init() {
+  const serviceProcess = initServiceProcess();
+  const appWindow = initAppWindow();
+  const pluginsProcess = initPlugins();
+
+  appWindow.webContents.mainFrame.ipc.on('request-init-channel', (_event) => {
+    initAppServiceMessageChannel(appWindow, serviceProcess);
+  });
+
+  initAppServiceMessageChannel(appWindow, serviceProcess);
 
   const registerPluginServiceProviderMessage: RPCMessage = {
     header: {

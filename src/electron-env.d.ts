@@ -26,6 +26,9 @@ declare namespace NodeJS {
 // Used in Renderer process, expose in `preload.ts`
 declare global {
   interface Window {
-    AppServiceProvider: AppServiceProvider
+    AppServiceProvider: AppServiceProvider,
+    Initializer: {
+      InitServiceProvider: () => void,
+    }
   }
 }

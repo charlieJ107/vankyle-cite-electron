@@ -5,13 +5,17 @@ import path from "path";
 
 export class JsonFileDatabase<T extends BaseDataModel> implements IDatabase<T> {
     private dataDir: string;
-    constructor(dataDir: string = path.join(__dirname, "data")) {
+    constructor(dataDir: string = path.join(__dirname, "data.json")) {
         this.dataDir = dataDir;
+        if (!fs.existsSync(dataDir)) {
+            console.log("Creating data file...");
+            fs.writeFileSync(dataDir, "{}");
+        }
     }
     private buffer: { [key: string]: T; } = {};
 
     private async updateBuffer() {
-        return await fs.readFile(path.join(this.dataDir, "data.json"), "utf8", (err: NodeJS.ErrnoException | null, jsonString: string) => {
+        return await fs.readFile(this.dataDir, "utf8", (err: NodeJS.ErrnoException | null, jsonString: string) => {
             if (err) {
                 console.error("File read failed:", err);
                 return;
