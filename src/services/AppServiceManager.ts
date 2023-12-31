@@ -3,9 +3,6 @@ import { IServiceManager, RPCMessage } from "@charliej107/vankyle-cite-rpc";
 import { IAppService } from "./IAppService";
 
 
-export interface RPCServer {
-}
-
 /**
  * @name AppServiceManager
  * @description
@@ -18,6 +15,7 @@ export class AppServiceManager implements IServiceManager<IAppService>{
     constructor() {
         this.services = new Map<string, IAppService>();
         this.targets = new Map<string, MessagePortMain>();
+        console.log('AppServiceManager initialized');
     }
 
     private async handleMessage(event: MessageEvent) {
@@ -94,6 +92,5 @@ export class AppServiceManager implements IServiceManager<IAppService>{
         target.on("message", this.handleMessage.bind(this));
         this.targets.set(name, target);
     }
-
 
 }
