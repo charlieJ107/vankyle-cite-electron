@@ -8,13 +8,17 @@ import { PluginServiceProxy } from "./PluginServiceProxy";
  */
 export class PluginServiceProvider implements IServiceProvider {
     private whoami = "plugin-service-provider";
-    private pluginServiceManagerProt: MessagePort;
+    private pluginServiceManagerProt: MessagePort | null = null;
     private pendingServiceRequests: Map<string, {
         resolve: (value: PluginServiceProxy<IPluginService> | PromiseLike<PluginServiceProxy<IPluginService>>) => void
         reject: (reason?: any) => void
     }> = new Map();
 
-    constructor(messagePort: MessagePort) {
+    constructor() {
+
+    }
+
+    public init(messagePort: MessagePort) {
         this.pluginServiceManagerProt = messagePort;
         this.pluginServiceManagerProt.onmessage = this.handleResponse.bind(this);
     }
@@ -36,6 +40,9 @@ export class PluginServiceProvider implements IServiceProvider {
     }
 
     private sendServiceRequest(message: RPCRequestMessage) {
+        if (!this.pluginServiceManagerProt) {
+            throw new Error('Plugin service manager port not initialized');
+        }
         this.pluginServiceManagerProt.postMessage(message);
     }
 
