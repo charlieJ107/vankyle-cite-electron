@@ -3,9 +3,13 @@
  */
 import { RPCMessage } from "@charliej107/vankyle-cite-rpc";
 import { AppServiceManager } from "./AppServiceManager";
+import { ConfigService } from "./ConfigService/ConfigService";
+import { DatabaseService } from "./DatabaseService/DatabaseService";
 
 
 const serviceManager = new AppServiceManager();
+serviceManager.reigisterService("config-service", new ConfigService());
+serviceManager.reigisterService("database-service", new DatabaseService());
 process.parentPort.on("message", (event) => {
     const message = event.data as RPCMessage;
     switch (message.header.method) {

@@ -1,7 +1,8 @@
 import { IConfig } from "../../common/config/ConfigInterfaces";
-import { IService } from "@charliej107/vankyle-cite-rpc";
 import fs from "fs";
 import path from "path";
+import { IAppService } from "../IAppService";
+import { MessagePortMain } from "electron";
 
 const defaultConfig: IConfig = {
     plugins: {
@@ -10,10 +11,12 @@ const defaultConfig: IConfig = {
     }
 }
 
-export class ConfigService implements IService {
+export class ConfigService implements IAppService {
     private rootPath: string;
     private config: IConfig;
+    // [key: string]: any;
     constructor(rootPath: string = path.join(__dirname, "config")) {
+        console.log("Initializing ConfigService with root path: ", rootPath)
         this.rootPath = rootPath;
         this.config = defaultConfig;
         if (!(fs.existsSync(rootPath))) {
@@ -24,9 +27,10 @@ export class ConfigService implements IService {
         } else {
             this.config = JSON.parse(fs.readFileSync(path.join(this.rootPath, "config.json")).toString()) as IConfig;
         }
+        console.log('ConfigService initialized');
     }
-
-    public getConfig(): IConfig {
+    init = async (_meessagePort: MessagePortMain) => { };
+    getConfig = (): IConfig => {
         return this.config;
     }
 }
