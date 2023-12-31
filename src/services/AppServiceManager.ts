@@ -58,7 +58,8 @@ export class AppServiceManager implements IServiceManager<IAppService>{
 
     private async handleGetService(message: RPCMessage) {
         const service = this.services.get(message.header.service);
-        if (!service || !service[message.header.method]) {
+        console.log(`AppServiceManager.getService(${message.header.service})`);
+        if (!service) {
             const errorMessage: RPCMessage = {
                 header: {
                     id: message.header.id,
@@ -104,8 +105,11 @@ export class AppServiceManager implements IServiceManager<IAppService>{
             this.handleMessage(e)
         });
         target.on("close", () => {
+            console.log(`AppServiceManager received close from ${name}`);
             this.targets.delete(name);
         });
+        console.log(`AppServiceManager registered service provider ${name}`);
+        target.start();
         this.targets.set(name, target);
     }
 

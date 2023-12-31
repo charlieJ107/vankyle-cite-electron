@@ -20,7 +20,10 @@ export class AppServiceProvider implements IServiceProvider {
             console.warn('AppServiceProvider already initialized');
         } else {
             this.appServiceManagerMessagePort = messagePort;
-            this.appServiceManagerMessagePort.onmessage = this.handleResponse.bind(this);
+            this.appServiceManagerMessagePort.onmessage = (event) => {
+                console.log(`AppServiceProvider received message from ${event.origin}`);
+                this.handleResponse(event);
+            };
             console.log('AppServiceProvider initialized');
         }
     }
@@ -57,6 +60,9 @@ export class AppServiceProvider implements IServiceProvider {
         switch (message.header.method) {
             case 'get-service':
                 this.resolveService(message, messageEvent.ports);
+                break;
+            default:
+                console.warn(`AppServiceProvider received unknown method ${message.header.method}`);
                 break;
         }
     }

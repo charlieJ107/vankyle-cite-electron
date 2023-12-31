@@ -31,7 +31,7 @@ function initAppServiceMessageChannel(appWindow: BrowserWindow, serviceProcess: 
       id: Date.now(),
       from: "main",
       method: "register-service-provider",
-      service: "AppServiceProvider",
+      service: "app-service-provider",
     },
     body: null,
   };
@@ -45,10 +45,9 @@ function init() {
   const pluginsProcess = initPlugins();
 
   appWindow.webContents.mainFrame.ipc.on('request-init-channel', (_event) => {
+    console.log('Renderer received request-init-channel message');
     initAppServiceMessageChannel(appWindow, serviceProcess);
   });
-
-  initAppServiceMessageChannel(appWindow, serviceProcess);
 
   const registerPluginServiceProviderMessage: RPCMessage = {
     header: {
