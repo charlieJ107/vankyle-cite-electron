@@ -39,4 +39,6 @@ export function initAppWindow() {
         // win.loadFile('dist/index.html')
         browserWindow.loadFile(path.join(process.env.DIST, 'index.html'));
     }
+
+    return browserWindow;
 }

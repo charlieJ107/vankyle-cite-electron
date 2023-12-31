@@ -36,6 +36,9 @@ export class AppServiceManager implements IServiceManager<IAppService>{
     }
 
     private handleResponse(_message: RPCMessage) {
+        // TODO
+        console.error("Method not implemented.");
+        throw new Error("Method not implemented.");
     }
 
     private async handleRequest(message: RPCMessage) {
@@ -82,8 +85,6 @@ export class AppServiceManager implements IServiceManager<IAppService>{
         };
         this.targets.get(message.header.from)?.postMessage(response, [port2]);
     }
-
-
 
     public reigisterService(name: string, service: IAppService) {
         this.services.set(name, service);

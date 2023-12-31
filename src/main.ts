@@ -20,8 +20,11 @@ app.on('activate', () => {
   }
 })
 
+function init() {
+  const serviceProcess = initServiceProcess();
+  const appWindow = initAppWindow();
+  const pluginsProcess = initPlugins();
+  // TODO: Exchange messagePorts between processes
+}
 
-app.whenReady()
-  .then(initServiceProcess)
-  .then(initAppWindow)
-  .then(initPlugins);
+app.whenReady().then(init);
