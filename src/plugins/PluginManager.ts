@@ -2,54 +2,16 @@ import fs from "fs/promises";
 import path from "path";
 import { IPluginConfig } from "../common/config/ConfigInterfaces";
 import { IPlugin, IPluginManifest, IPluginService } from "@charliej107/vankyle-cite-plugin";
-import { PluginServiceProvider } from "../../vankyle-cite-plugin/src/PluginServiceProvider";
 
 export class PluginManager {
     private config: IPluginConfig;
-    private installedPlugins: IPluginManifest[];
-    private enabledPlugins: IPlugin[];
-    private pluginServiceProvider: PluginServiceProvider;
     private pluginInstances: { [key: string]: IPluginService } = {};
-    constructor(config: IPluginConfig, pluginServiceProvider: PluginServiceProvider) {
+    constructor(config: IPluginConfig) {
         this.config = config;
-        this.installedPlugins = [];
-        this.enabledPlugins = [];
-        this.pluginServiceProvider = pluginServiceProvider;
-    }
-
-    public async init() {
-        await this.scanPlugins();
-        if (this.config.enabled_plugins.length > 0) {
-            const pluginPromises = this.installedPlugins.filter(
-                (menifest) => menifest.uuid in this.config.enabled_plugins)
-                .map(async (manifest) => await this.getPluginFromPluginManifest(manifest));
-            this.enabledPlugins = await Promise.all(pluginPromises);
-        }
-    }
-    public async loadEnabledPlugins() {
-        for (const plugin of this.enabledPlugins) {
-            const instance = this.pluginServiceProvider.resolveService(plugin);
-            await instance.load();
-            this.pluginInstances[plugin.toString()] = instance;
-        }
-    }
-    public async getInstalledPlugins(): Promise<IPluginManifest[]> {
-        return this.installedPlugins;
-    }
-
-    public async enablePlugin(plugin_manifest: IPluginManifest): Promise<void> {
-        const plugin: IPlugin = await this.getPluginFromPluginManifest(plugin_manifest);
-        this.enabledPlugins.push(plugin);
-
-    }
-
-    public async getEnabledPlugins(): Promise<IPlugin[]> {
-        return this.enabledPlugins;
     }
 
 
-
-    private async scanPlugins() {
+    public async scanPlugins() {
 
         const items = await fs.readdir(this.config.plugin_dir);
 
@@ -61,7 +23,7 @@ export class PluginManager {
         });
 
         const validPlugins: (IPluginManifest | null)[] = await Promise.all(promises);
-        this.installedPlugins = validPlugins.filter((plugin) => plugin !== null) as IPluginManifest[];
+        const installedPlugins = validPlugins.filter((plugin) => plugin !== null) as IPluginManifest[];
     }
 
     private async isValidPlugin(dir_or_file: string): Promise<boolean> {
@@ -70,7 +32,7 @@ export class PluginManager {
             const itemStats = await fs.stat(itemPath);
             if (itemStats.isDirectory()) {
                 const manifest = await this.getPluginManifestFromPluginPath(itemPath);
-                if (this.isValidManifest(manifest)) {
+                if (await this.isValidManifest(manifest)) {
                     const entryPath = path.join(itemPath, manifest.entry);
 
                     const entryStats = await fs.stat(entryPath);
@@ -116,7 +78,7 @@ export class PluginManager {
         return plugin;
     }
 
-    private isValidManifest(manifest: IPluginManifest): boolean {
+    private async isValidManifest(manifest: IPluginManifest): Promise<boolean> {
         const requiredFields = ['manifest-version', 'name', 'uid', 'version', 'entry'];
 
         for (const field of requiredFields) {
@@ -130,6 +92,18 @@ export class PluginManager {
         // Duplicate check with isValidPlugin, but it's better to be safe than sorry
         if (!manifest.entry.endsWith('.js')) {
             console.error(`Plugin entry field does not point to a .js file: ${manifest.entry}`);
+            return false;
+        }
+        // Chekc if the entry field points to a file that exists use fs/promises.stat
+        const entryPath = path.join(this.config.plugin_dir, manifest.uuid, manifest.entry);
+        try {
+            const entryStats = await fs.stat(entryPath);
+            if (!entryStats.isFile()) {
+                console.error(`Plugin entry field does not point to a file: ${manifest.entry}`);
+                return false;
+            }
+        } catch (error) {
+            console.error(`Error checking plugin entry file:`, error);
             return false;
         }
 

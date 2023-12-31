@@ -4,10 +4,11 @@
 
 import { IPluginConfig } from "../common/config/ConfigInterfaces";
 import { PluginManager } from "./PluginManager";
-import { PluginServiceProvider } from "../../vankyle-cite-plugin/src/PluginServiceProvider";
+import { PluginServiceProvider } from "@charliej107/vankyle-cite-plugin";
 import path from 'path';
 
-// TODO 初始化插件服务进程的RPC接口
+// 初始化插件服务进程的MessageChannel
+
 
 // 获得插件服务进程配置
 const config: IPluginConfig = {
@@ -16,14 +17,5 @@ const config: IPluginConfig = {
     enabled_plugins: []
 };
 
-const ServiceProvider = new PluginServiceProvider();
-// 注册给插件的服务
-ServiceProvider.registerService("PluginServiceProvider", ServiceProvider);
-
-const Manager = new PluginManager(config, ServiceProvider);
-Manager.init().then(async () => {
-    await Manager.loadEnabledPlugins();
-    console.log("Plugins loaded.");
-    // TODO
-    // 通知主进程插件服务进程已经初始化完毕
-});
+// 初始化插件管理器
+const pluginManager = new PluginManager(config);

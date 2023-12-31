@@ -20,6 +20,6 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["src", "electron", "vankyle-cite-plugin/src/PluginServiceProvider.ts"],
+  "include": ["src", "electron", "src/plugins/PluginServiceProvider.ts"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }
