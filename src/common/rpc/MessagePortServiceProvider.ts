@@ -13,16 +13,18 @@ export class MessagePortServicesProvider implements IServiceProvider {
         this.services = new Map();
     }
 
-    public initServices(): MessagePort {
+    public init(): MessagePort {
         if (this.port) {
             throw new Error("Port already initialized");
         }
         const { port1, port2 } = new MessageChannel();
         this.port = port1;
         this.port.onmessage = (event) => {
-            const message = event.data as IRpcMessage;
+            const message = event.data;
             if (message.id) {
-                this.handleResponse(message);
+                this.handleMessage(message as IRpcMessage);
+            } else {
+                console.warn("Message received without id: ", message);
             }
         }
 
@@ -71,17 +73,22 @@ export class MessagePortServicesProvider implements IServiceProvider {
         });
     }
 
-    private handleResponse(message: IRpcMessage) {
-        const call = this.pendingCalls.get(message.id);
-        if (!call) {
-            console.warn("No pending call found for message: ", message);
-            throw new Error("No pending call found");
-        }
+    private handleResponse(message: IRpcMessage, call: { resolve: (value: any) => void, reject: (reason: any) => void }) {
         this.pendingCalls.delete(message.id);
         if (message.result) {
             call.resolve(message.result);
         } else {
             call.reject(message.error ? message.error : "Undefined error");
+        }
+    }
+
+    private handleMessage(message: IRpcMessage) {
+        const call = this.pendingCalls.get(message.id);
+        if (!call) {
+            console.warn("No pending call found for message: ", message);
+            return;
+        } else {
+            this.handleResponse(message, call);
         }
     }
 

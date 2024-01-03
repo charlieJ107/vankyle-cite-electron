@@ -18,6 +18,7 @@ export class MessagePortServiceRegistry implements IServiceRegistry{
                     serviceManager: message.serviceManager,
                     port: null,
                 } as ServiceProviderInitResponse);
+                return;
             }
             postMessage(message, [port]);
         });

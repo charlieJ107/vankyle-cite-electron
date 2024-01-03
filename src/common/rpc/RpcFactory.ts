@@ -20,7 +20,7 @@ export class RpcFactory {
             serviceManager: APP_SERVICE_MANAGER,
             providerId: `${process.pid}-provider-0`,
         };
-        const port = AppServiceProvider.initServices();
+        const port = AppServiceProvider.init();
         ipcRenderer.postMessage(serviceManagerInitRequest.chennel, serviceManagerInitRequest, [port]);
         return AppServiceProvider;
     }
