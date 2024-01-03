@@ -21,8 +21,12 @@ const config: ForgeConfig = {
                 },
                 {
                     entry: 'src/preload.ts',
-                    config: 'vite.preload.config.ts',
+                    config: 'vite.default.config.ts',
                 },
+                {
+                    entry: 'src/services/service.ts',
+                    config: 'vite.default.config.ts',
+                }
             ],
             renderer: [
                 {

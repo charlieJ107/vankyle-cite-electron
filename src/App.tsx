@@ -4,6 +4,7 @@ import Header from '@components/header';
 import MainView from '@components/main-view';
 import SideBar from '@components/side-bar';
 
+
 function App() {
     return (
         <AppContextProvider>

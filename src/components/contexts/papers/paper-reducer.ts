@@ -3,6 +3,11 @@ import { PaperContextAction, PaperContextState } from "./paper-context-types";
 
 export function paperContextReducer(state: PaperContextState, actions: PaperContextAction) {
     switch (actions.type) {
+        case "LOAD_PAPERS":
+            return {
+                ...state,
+                filteredPapers: actions.papers!
+            };
         case "SELECT_PAPER":
             return {
                 ...state,

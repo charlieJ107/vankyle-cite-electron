@@ -4,10 +4,20 @@ export interface PaperContextState {
     filteredPapers: Paper[];
     selectedPapers: Paper[];
     focusedPaper: Paper | null;
+    paging: {
+        page: number;
+        pageSize: number;
+        total: number;
+    };
 }
 
+
 export interface PaperContextAction {
-    type: "SELECT_PAPER" | "FOCUS_PAPER" | "UNSELECT_PAPER" | "UNFOCUS_PAPER";
+    type: "LOAD_PAPERS"
+    | "SELECT_PAPER"
+    | "FOCUS_PAPER"
+    | "UNSELECT_PAPER"
+    | "UNFOCUS_PAPER";
     paper?: Paper;
     papers?: Paper[];
 }
