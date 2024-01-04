@@ -78,7 +78,7 @@ export class MessagePortServiceManager implements IServiceManager {
             port.on("message", (event) => {
                 this.onServiceProviderMessage(provider, event);
             });
-    
+
             this.serviceProviders.set(provider, port);
             port.start();
             return;
@@ -121,6 +121,7 @@ export class MessagePortServiceManager implements IServiceManager {
      * @param message message from service provider
      */
     private handleServiceMessage(port: MessagePortMain | MessagePort, message: IRpcMessage) {
+
         const service = this.services.get(message.service);
 
         if (!service || !service[message.method]) {
@@ -135,6 +136,7 @@ export class MessagePortServiceManager implements IServiceManager {
         }
         const method = service[message.method];
         method.apply(service, message.params).then((result: any) => {
+            console.log(`Service ${message.service}.${message.method}(`, message.params, `) calling id: ${message.id} result: `, result,);
             const response: IRpcMessage = {
                 id: message.id,
                 service: message.service,

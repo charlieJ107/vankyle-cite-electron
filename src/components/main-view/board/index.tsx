@@ -3,12 +3,15 @@ import { mergeClasses } from "@fluentui/react-components";
 import { Exploer } from "./exploer";
 import { BoardContextState } from "@components/contexts/boards/board-context-types";
 import { useBoardState } from "@components/contexts/boards/board-context";
+import { Marketplace } from "./marketplace";
 
 
 function SwitchBoards({ state }: { state: BoardContextState }) {
     switch (state.currentBoard) {
         case "exploer":
             return <Exploer />
+        case "marketplace":
+            return <Marketplace />
         default:
             return null
     }

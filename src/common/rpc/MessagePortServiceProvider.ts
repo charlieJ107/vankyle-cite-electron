@@ -53,16 +53,17 @@ export class MessagePortServicesProvider implements IServiceProvider {
         this.services.clear();
         const services: { name: string, methods: string[] }[] = await this.call("ServiceManagerSelf", "getServices");
         services.forEach(service => this.services.set(service.name, new Set(service.methods)));
-        const provider = this; // Avoid "this" being shadowed in the proxy
     }
 
     public call<T>(service: string, method: string, ...args: any[]): Promise<T> {
         if (!this.port) {
             throw new Error("Port not initialized");
         }
+
         return new Promise((resolve, reject) => {
             const callId = Date.now();
             this.pendingCalls.set(callId, { resolve, reject });
+            console.log(`Calling ${service}.${method}(${args}) calling id: ${callId}`);
             const message: IRpcMessage = {
                 id: callId,
                 service,
@@ -75,6 +76,7 @@ export class MessagePortServicesProvider implements IServiceProvider {
 
     private handleResponse(message: IRpcMessage, call: { resolve: (value: any) => void, reject: (reason: any) => void }) {
         this.pendingCalls.delete(message.id);
+        console.log(`Response for call ${message.id}: `, message);
         if (message.result) {
             call.resolve(message.result);
         } else {

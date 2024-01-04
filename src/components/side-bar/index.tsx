@@ -18,7 +18,8 @@ export default function SideBar() {
         <SideBarNav className={style.sideBar}>
             <SidebarIconButton icon={<BoardRegular />} content="Exploer" onClick={() => { dispatchBoard({ board: "exploer" }) }} />
             {/* TODO: Addins icons and extension system */}
-            <SidebarIconButton icon={<AppsAddInRegular />} content="Add Ins" />
+            <SidebarIconButton icon={<AppsAddInRegular />} content="Add Ins"
+                onClick={() => dispatchBoard({ board: "marketplace" })} />
         </SideBarNav>
     );
 
