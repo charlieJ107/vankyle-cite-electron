@@ -1,0 +1,3 @@
+[submodule "vankyle-cite-plugin"]
+	path = vankyle-cite-plugin
+	url = git@github.com:charlieJ107/vankyle-cite-plugin.git

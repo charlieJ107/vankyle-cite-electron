@@ -15,5 +15,5 @@ export function init() {
         (message, ports) => serviceProcess.postMessage(message, ports)
     );
     
-    const mainWindow = createAppWindow();
+    createAppWindow();
 }
