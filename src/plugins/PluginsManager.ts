@@ -34,12 +34,25 @@ export class PluginsManager {
                             plugin.on("closed", () => {
                                 this.plugins.delete(message.params.manifest.name);
                             });
+                            const responseMessage: IProcessMessage = {
+                                chennel: "plugin-manager-response",
+                                method: "stopPlugin",
+                                params: { manifest: message.params.manifest },
+                                result: "ok"
+                            };
+                            this.serviceProcess.postMessage(responseMessage);
+                        } else {
+                            const responseMessage: IProcessMessage = {
+                                chennel: "plugin-manager-response",
+                                method: "stopPlugin",
+                                params: { manifest: message.params.manifest },
+                                result: "error: Plugin not found"
+                            };
+                            this.serviceProcess.postMessage(responseMessage);
                         }
-                    case "showPlugin":
-                        // TODO: show plugin
-                        break;
-                    case "hidePlugin":
-                        // TODO: hide plugin
+                    // TODO: Hide and show window / board / panel plugins
+                    default:
+                        console.warn("Invalid message from service process: ", msg);
                         break;
                 }
                 break;
@@ -58,6 +71,13 @@ export class PluginsManager {
         console.log("dir: ", dir, "manifest: ", manifest);
         if (this.plugins.has(manifest.name)) {
             console.warn(`Plugin ${manifest.name} is already running.`);
+            const responseMessage: IProcessMessage = {
+                chennel: "plugin-manager-response",
+                method: "startPlugin",
+                params: { manifest },
+                result: "error: Plugin is already running."
+            };
+            this.serviceProcess.postMessage(responseMessage);
             return;
         }
         const plugin = new BrowserWindow({
@@ -67,9 +87,15 @@ export class PluginsManager {
             },
         });
         const pluginIndex = path.join(dir, 'index.html');
-        console.log("pluginIndex: ", pluginIndex);
         plugin.loadFile(pluginIndex);
         plugin.webContents.openDevTools();
         this.plugins.set(manifest.name, plugin);
+        const responseMessage: IProcessMessage = {
+            chennel: "plugin-manager-response",
+            method: "startPlugin",
+            params: { manifest },
+            result: "ok"
+        };
+        this.serviceProcess.postMessage(responseMessage);
     }
 }

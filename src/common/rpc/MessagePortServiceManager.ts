@@ -44,12 +44,12 @@ export class MessagePortServiceManager implements IServiceManager {
      */
     private onParentPortMessage(event: MessageEvent) {
         const message = event.data as IProcessMessage;
-        const [port] = event.ports;
-        if (!port) {
-            throw new Error("No port in event");
-        }
         switch (message.chennel) {
             case "request-init-service-provider":
+                const [port] = event.ports;
+                if (!port) {
+                    throw new Error("No port in event");
+                }
                 this.registerServiceProvider(message.providerId, port);
                 break;
             case "plugin-manager-response":

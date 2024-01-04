@@ -111,25 +111,32 @@ export class PluginService {
             case "plugin-manager-response":
                 switch (message.method) {
                     case "startPlugin":
-                        const plugin = this.plugins.get(message.params.manifest.name);
-                        if (plugin) {
-                            plugin.status.running = true;
+                        if (message.result === "ok") {
+                            const plugin = this.plugins.get(message.params.manifest.name);
+                            if (plugin) {
+                                plugin.status.running = true;
+                            } else {
+                                this.plugins.set(message.params.manifest.name, {
+                                    ...plugin,
+                                    status: {
+                                        running: true,
+                                        visible: true,
+                                    },
+                                });
+                            }
                         } else {
-                            this.plugins.set(message.params.manifest.name, {
-                                ...plugin,
-                                status: {
-                                    running: true,
-                                    visible: true,
-                                },
-                            });
+                            console.error("Failed to start plugin", message);
                         }
                         break;
                     case "stopPlugin":
-                        const plugin2 = this.plugins.get(message.params.manifest.name);
-                        if (plugin2) {
-                            plugin2.status.running = false;
+                        if (message.result === "ok") {
+                            const plugin = this.plugins.get(message.params.manifest.name);
+                            if (plugin) {
+                                plugin.status.running = false;
+                            }
+                        } else {
+                            console.error("Failed to stop plugin", message);
                         }
-
                         break;
                     default:
                         throw new Error(`Unknown method ${message.method}`);
