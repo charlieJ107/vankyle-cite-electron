@@ -32,7 +32,7 @@ const config: ForgeConfig = {
                 {
                     name: 'app',
                     config: 'vite.app.config.ts',
-                },
+                }
             ],
         }),
     ],

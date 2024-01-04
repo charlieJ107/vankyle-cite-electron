@@ -1,7 +1,8 @@
 import { IService } from "@/services/IService";
 import { MessagePortMain, MessageEvent } from "electron";
-import { IRpcMessage, ServiceProviderInitRequest } from "./IRpcMessage";
+import { IProcessMessage, IRpcMessage } from "./IRpcMessage";
 import { IServiceManager } from "./IServiceManager";
+import { PluginService } from "@/services/PluginService/PluginService";
 
 export class MessagePortServiceManager implements IServiceManager {
     private services: Map<string, IService>;
@@ -42,7 +43,7 @@ export class MessagePortServiceManager implements IServiceManager {
      * @param event message event from parent process port
      */
     private onParentPortMessage(event: MessageEvent) {
-        const message = event.data as ServiceProviderInitRequest;
+        const message = event.data as IProcessMessage;
         const [port] = event.ports;
         if (!port) {
             throw new Error("No port in event");
@@ -50,6 +51,14 @@ export class MessagePortServiceManager implements IServiceManager {
         switch (message.chennel) {
             case "request-init-service-provider":
                 this.registerServiceProvider(message.providerId, port);
+                break;
+            case "plugin-manager-response":
+                if (this.services.has("PluginService")) {
+                    const service = this.services.get("PluginService") as PluginService;
+                    service.handlePluginManagerResponse(message);
+                } else {
+                    throw new Error("PluginService not registered");
+                }
                 break;
             default:
                 throw new Error(`Unknown message chennel ${message.chennel}`);

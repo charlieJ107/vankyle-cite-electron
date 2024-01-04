@@ -1,11 +1,9 @@
 import { Paper } from './models/Paper';
+import { DropService } from './services/DropService/DropService';
+import { PaperService } from './services/PaperService/PaperService';
 interface IAppServices {
-    DropService: {
-        handleDrop: (files: FileList) => void;
-    }
-    PaperService: {
-        getAllPapers: (paging?: {page: number, pageSize: number, total: number}) => Promise<Paper[]>;
-    }
+    DropService: DropService
+    PaperService: PaperService
 }
 
 declare global {
