@@ -14,6 +14,7 @@ export class PluginService {
             visible: boolean,
         }
     }> = new Map();
+    private pendingCalls: Map<number, { resolve: (value: any) => void, reject: (reason: any) => void }>;
     constructor(config: IConfig) {
         this.cofnig = config;
         // create config.plugins.plugin_dir if not exists
@@ -90,19 +91,35 @@ export class PluginService {
             params: { manifest: plugin.manifest, dir: path.join(this.cofnig.plugins.plugin_dir, plugin.dir) },
         };
         process.parentPort.postMessage(startPluginMessage);
+        this.plugins.set(manifest.name, {
+            ...plugin, 
+            status: {
+                ...plugin.status,
+                running: true,
+            }});
         // TODO: get response from plugin manager
         return "ok";
     }
 
     disablePlugin = async (manifest: PluginManifest) => {
         console.log("disablePlugin", manifest);
+        const plugin = this.plugins.get(manifest.name);
+        if (!plugin) {
+            console.error("Plugin not found", manifest);
+            return "error";
+        }
         const stopPluginMessage: IProcessMessage = {
             chennel: "plugin-manager-request",
             method: "stopPlugin",
             params: { manifest },
         };
         process.parentPort.postMessage(stopPluginMessage);
-        // TODO: Get response from plugin manager
+        this.plugins.set(manifest.name, {
+            ...plugin, 
+            status: {
+                ...plugin.status,
+                running: false,
+            }});
         return "ok";
     }
 

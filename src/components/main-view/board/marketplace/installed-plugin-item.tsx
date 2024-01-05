@@ -1,8 +1,8 @@
-import { IPlugin } from "@/plugins/PluginManifest";
+import { IPlugin, PluginManifest } from "@/plugins/PluginManifest";
 import { Button, Card, CardFooter, CardHeader } from "@fluentui/react-components";
 import { AppsAddInRegular, MoreHorizontalRegular } from "@fluentui/react-icons";
 
-export function InstalledPluginItem({ plugin }: { plugin: IPlugin }) {
+export function InstalledPluginItem({ plugin, onEnable, onDisable }: { plugin: IPlugin, onEnable: (plugin: PluginManifest) => void, onDisable: (plugin: PluginManifest) => void }) {
     return (
         <Card>
             <CardHeader
@@ -17,10 +17,10 @@ export function InstalledPluginItem({ plugin }: { plugin: IPlugin }) {
             <p>{plugin.manifest.description}</p>
             <CardFooter>
                 {plugin.status === "enabled" ?
-                    <Button>
+                    <Button onClick={() => onDisable(plugin.manifest)}>
                         Disable
                     </Button> :
-                    <Button onClick={() => window.AppServices.PluginService.enablePlugin(plugin.manifest)}>
+                    <Button onClick={() => onEnable(plugin.manifest)}>
                         Enable
                     </Button>}
             </CardFooter>
