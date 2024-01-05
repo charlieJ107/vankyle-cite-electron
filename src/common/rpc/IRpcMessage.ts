@@ -11,7 +11,7 @@ export interface IRpcMessage {
 
 type SerivceProviderChennel = "request-init-service-provider" | "init-service-provider-response";
 
-interface IServiceProviderMessage {
+export interface IServiceProviderMessage {
     chennel: SerivceProviderChennel;
     providerId: IServiceProviderMessage["chennel"] extends "request-init-service-provider" ? string : never;
     serviceManager: IServiceProviderMessage["chennel"] extends "init-service-provider-response" ? string : never;
@@ -27,7 +27,8 @@ type PluginManagerMethod =
 type PluginManagerChannel = "plugin-manager-request" | "plugin-manager-response";
 type PluginMessageParam = { manifest: PluginManifest, dir?: string };
 
-interface IPluginManagerMessage {
+export interface IPluginManagerMessage {
+    callId: number;
     chennel: PluginManagerChannel;
     method: PluginManagerMethod;
     params: PluginMessageParam;

@@ -63,7 +63,6 @@ export class MessagePortServicesProvider implements IServiceProvider {
         return new Promise((resolve, reject) => {
             const callId = Date.now();
             this.pendingCalls.set(callId, { resolve, reject });
-            console.log(`Calling ${service}.${method}(${args}) calling id: ${callId}`);
             const message: IRpcMessage = {
                 id: callId,
                 service,
@@ -76,7 +75,6 @@ export class MessagePortServicesProvider implements IServiceProvider {
 
     private handleResponse(message: IRpcMessage, call: { resolve: (value: any) => void, reject: (reason: any) => void }) {
         this.pendingCalls.delete(message.id);
-        console.log(`Response for call ${message.id}: `, message);
         if (message.result) {
             call.resolve(message.result);
         } else {

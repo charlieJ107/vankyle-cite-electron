@@ -136,7 +136,6 @@ export class MessagePortServiceManager implements IServiceManager {
         }
         const method = service[message.method];
         method.apply(service, message.params).then((result: any) => {
-            console.log(`Service ${message.service}.${message.method}(`, message.params, `) calling id: ${message.id} result: `, result,);
             const response: IRpcMessage = {
                 id: message.id,
                 service: message.service,

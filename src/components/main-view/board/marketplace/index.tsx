@@ -12,17 +12,21 @@ export function Marketplace() {
     }, []);
 
     const onEnablePlugin = (plugin: PluginManifest) => {
-        window.AppServices.PluginService.enablePlugin(plugin);
-        window.AppServices.PluginService.getPlugins().then((plugins) => {
-            setPlugins(plugins);
+        window.AppServices.PluginService.enablePlugin(plugin).then(() => {
+            window.AppServices.PluginService.getPlugins().then((newPlugins) => {
+                setPlugins(newPlugins);
+            });
         });
+
     }
 
     const onDisablePlugin = (plugin: PluginManifest) => {
-        window.AppServices.PluginService.disablePlugin(plugin);
-        window.AppServices.PluginService.getPlugins().then((plugins) => {
-            setPlugins(plugins);
+        window.AppServices.PluginService.disablePlugin(plugin).then(() => {
+            window.AppServices.PluginService.getPlugins().then((newPlugins) => {
+                setPlugins(newPlugins);
+            });
         });
+
     }
 
     return (

@@ -1,7 +1,6 @@
 import { BrowserWindow, UtilityProcess, app } from "electron";
 import path from "path";
-import { PluginManifest } from "./PluginManifest";
-import { IProcessMessage } from "@/common/rpc/IRpcMessage";
+import { IPluginManagerMessage, IProcessMessage } from "@/common/rpc/IRpcMessage";
 
 export class PluginsManager {
     private plugins: Map<string, BrowserWindow>;
@@ -16,7 +15,7 @@ export class PluginsManager {
 
     public handleServiceProcessMessage(msg: any) {
         if (!msg.chennel) {
-            console.warn("Invalid message from service process: ", msg);
+            console.warn("Invalid message format from service process: ", msg);
             return;
         }
         const message = msg as IProcessMessage;
@@ -25,53 +24,61 @@ export class PluginsManager {
                 switch (message.method) {
                     // TODO: respond to plugin service
                     case "startPlugin":
-                        this.startPlugin(message.params.dir, message.params.manifest);
+                        this.startPlugin(message as IPluginManagerMessage);
                         break;
                     case "stopPlugin":
-                        const plugin = this.plugins.get(message.params.manifest.name);
-                        if (plugin) {
-                            plugin.close();
-                            plugin.on("closed", () => {
-                                this.plugins.delete(message.params.manifest.name);
-                            });
-                            const responseMessage: IProcessMessage = {
-                                chennel: "plugin-manager-response",
-                                method: "stopPlugin",
-                                params: { manifest: message.params.manifest },
-                                result: "ok"
-                            };
-                            this.serviceProcess.postMessage(responseMessage);
-                        } else {
-                            const responseMessage: IProcessMessage = {
-                                chennel: "plugin-manager-response",
-                                method: "stopPlugin",
-                                params: { manifest: message.params.manifest },
-                                result: "error: Plugin not found"
-                            };
-                            this.serviceProcess.postMessage(responseMessage);
-                        }
+                        this.stopPlugin(message as IPluginManagerMessage);
+                        break;
                     // TODO: Hide and show window / board / panel plugins
                     default:
-                        console.warn("Invalid message from service process: ", msg);
+                        console.warn("Invalid message method from service process,: ", msg);
                         break;
                 }
                 break;
             default:
-                console.warn("Invalid message from service process: ", msg);
+                console.warn("Invalid message cannel from service process: ", msg);
                 break;
         }
     }
 
-    public startPlugin(dir: string, manifest: PluginManifest) {
-        this.startHiddentPlugin(dir, manifest);
+    public startPlugin(message: IPluginManagerMessage) {
+        this.startHiddentPlugin(message);
         // TODO: Support window / board / panel plugins
     }
 
-    public startHiddentPlugin(dir: string, manifest: PluginManifest) {
-        console.log("dir: ", dir, "manifest: ", manifest);
+    public stopPlugin(message: IPluginManagerMessage) {
+        const plugin = this.plugins.get(message.params.manifest.name);
+        if (plugin) {
+            plugin.close();
+            plugin.on("closed", () => {
+                this.plugins.delete(message.params.manifest.name);
+            });
+            const responseMessage: IProcessMessage = {
+                callId: message.callId,
+                chennel: "plugin-manager-response",
+                method: "stopPlugin",
+                params: { manifest: message.params.manifest },
+                result: "ok"
+            };
+            this.serviceProcess.postMessage(responseMessage);
+        } else {
+            const responseMessage: IProcessMessage = {
+                callId: message.callId,
+                chennel: "plugin-manager-response",
+                method: "stopPlugin",
+                params: { manifest: message.params.manifest },
+                result: "error: Plugin not found"
+            };
+            this.serviceProcess.postMessage(responseMessage);
+        }
+    }
+
+    private startHiddentPlugin(message: IPluginManagerMessage) {
+        const manifest = message.params.manifest;
         if (this.plugins.has(manifest.name)) {
             console.warn(`Plugin ${manifest.name} is already running.`);
             const responseMessage: IProcessMessage = {
+                callId: message.callId,
                 chennel: "plugin-manager-response",
                 method: "startPlugin",
                 params: { manifest },
@@ -86,11 +93,12 @@ export class PluginsManager {
                 preload: path.join(__dirname, 'preload.js')
             },
         });
-        const pluginIndex = path.join(dir, 'index.html');
+        const pluginIndex = path.join(message.params.dir, 'index.html');
         plugin.loadFile(pluginIndex);
         plugin.webContents.openDevTools();
         this.plugins.set(manifest.name, plugin);
         const responseMessage: IProcessMessage = {
+            callId: message.callId,
             chennel: "plugin-manager-response",
             method: "startPlugin",
             params: { manifest },
