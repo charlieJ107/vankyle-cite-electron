@@ -1,22 +1,20 @@
-import { utilityProcess } from "electron";
+import { ipcMain, utilityProcess } from "electron";
 import { createAppWindow } from "./app-window";
-import { APP_SERVICE_MANAGER } from "./constrants";
-import { RpcFactory } from "../rpc/RpcFactory";
-import { PluginsManager } from "@/plugins/PluginsManager";
 import path from "path";
+import { REGISTER_SERVICE_PROVIDER } from "./../rpc/IMessage";
 
 export function init() {
-    const serviceReigistry = RpcFactory.createServiceRegistry();
-
     const serviceProcess = utilityProcess.fork(path.resolve(__dirname, "service.js"));
-
-    // Service managers must be registered before any service providers are initialized
-    serviceReigistry.registerServiceManager(
-        APP_SERVICE_MANAGER,
-        (message, ports) => serviceProcess.postMessage(message, ports)
-    );
-
-    const pluginsManager = new PluginsManager(serviceProcess);
-
+    ipcMain.on(REGISTER_SERVICE_PROVIDER, (event, message) => {
+        // Just forward the message to the service process to reduce the complexity of the main process
+        serviceProcess.postMessage(message, event.ports);
+    });
+    // Show the app window as soon as possible
     createAppWindow();
+
+    // TODO: Initialize services and provider
+    // * Initialize Plugin Service
+    // * Initialize System Service
+    // * Initialize Service Provider
+    // * Register Service
 }

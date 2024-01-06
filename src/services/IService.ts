@@ -1,7 +1,9 @@
 export interface IService {
-    [key: string | number | symbol]: any;
+    [key: string]: any;
+
 }
 
-export interface IAppServices {
-    [service: string | symbol]: IService;
+export interface IAppService {
+    [key: string]: IService;
 }
+

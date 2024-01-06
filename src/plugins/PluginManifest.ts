@@ -48,23 +48,3 @@ export interface IPlugin {
     manifest: PluginManifest;
     status: "online" | "enabled" | "disabled";
 }
-
-// export type IManagedPlugin = _IRunningManagedPlugin | _IStoppedManagedPlugin;
-
-// interface _IRunningManagedPlugin {
-//     manifest: PluginManifest;
-//     window: BrowserWindow;
-//     status: {
-//         running: true;
-//         visible: boolean;
-//     };
-// }
-
-// interface _IStoppedManagedPlugin {
-//     manifest: PluginManifest;
-//     window: null;
-//     status: {
-//         running: false;
-//         visible: boolean;
-//     };
-// }

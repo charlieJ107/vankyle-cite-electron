@@ -1,4 +1,4 @@
-import { IPluginManagerMessage, IProcessMessage } from "@/common/rpc/IRpcMessage";
+import { IRpcMessage } from "@/common/rpc/IMessage";
 import { IConfig } from "@/data/config/IConfig";
 import { IPlugin, PluginManifest, isValidPluginManifest } from "@/plugins/PluginManifest";
 import fs from "fs";
@@ -100,9 +100,10 @@ export class PluginService {
                 console.error("Plugin not found", manifest);
                 return "error";
             }
-            const startPluginMessage: IProcessMessage = {
-                callId,
-                chennel: "plugin-manager-request",
+            const startPluginMessage: IRpcMessage = {
+                id: callId,
+                type: "RPC",
+                direction: "REQUEST",
                 method: "startPlugin",
                 params: { manifest: plugin.manifest, dir: path.join(this.cofnig.plugins.plugin_dir, plugin.dir) },
             };

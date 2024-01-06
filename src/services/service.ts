@@ -1,14 +1,21 @@
 /**
  * @fileoverview Entrypoint of the service process.
  */
-
-import { RpcFactory } from "@/common/rpc/RpcFactory";
 import { PaperService } from "./PaperService/PaperService";
 import { DropService } from "./DropService/DropService";
-import { PluginService } from "./PluginService/PluginService";
+import { MessagePortServiceManager } from "@/common/rpc/MessagePortServiceManager";
+import { MessagePortServiceProvider } from "@/common/rpc/MessagePortServiceProvider";
+import { REGISTER_SERVICE_PROVIDER } from "@/common/rpc/IMessage";
 
-const ServiceManager = RpcFactory.createServiceManager();
-ServiceManager.registerService("PaperService", new PaperService());
-ServiceManager.registerService("DropService", new DropService());
-ServiceManager.registerService("PluginService", new PluginService({plugins: {plugin_dir: "./plugins", enabled_plugins: []}}));
+const ServiceManager = new MessagePortServiceManager();
+const ServiceProvider = new MessagePortServiceProvider((message, transfer) => {
+    if (message.channel === REGISTER_SERVICE_PROVIDER) {
+        const [port] = transfer;
+        ServiceManager.registerServiceProvider(message.payload, port);
+    } else {
+        console.warn("Invalid Service provider message channel: ", message);
+    }
+});
+ServiceProvider.registerService("PaperService", new PaperService());
+ServiceProvider.registerService("DropService", new DropService());
 

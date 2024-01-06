@@ -1,5 +1,6 @@
-import { IAppServices } from "@/services/IService";
+import { IAppService, IService } from "@/services/IService";
 
 export interface IServiceProvider {
-    getServices(): Promise<IAppServices>;
+    getServices(): Promise<IAppService>;
+    registerService(serviceName: string, service: IService): void;
 }

@@ -1,188 +1,209 @@
-import { IService } from "@/services/IService";
-import { MessagePortMain, MessageEvent } from "electron";
-import { IProcessMessage, IRpcMessage } from "./IRpcMessage";
-import { IServiceManager } from "./IServiceManager";
-import { PluginService } from "@/services/PluginService/PluginService";
+import { MessageEvent, MessagePortMain } from "electron";
+import { IIpcMessage, IRpcMessage, IServiceInfo, REQUEST_SERVICE_LIST, isIpcMessage, isRpcMessage } from "./IMessage";
 
-export class MessagePortServiceManager implements IServiceManager {
-    private services: Map<string, IService>;
-    private serviceProviders: Map<string, MessagePort | MessagePortMain>;
-    constructor(parentPort?: MessagePortMain) {
-        this.services = new Map();
+interface ProviderInfo {
+    providerId: string;
+    sevices: IServiceInfo[];
+    port: MessagePort | MessagePortMain;
+}
+
+/**
+ * 基于MessagePort实现的ServiceManager，工作在Service Process，分发和处理来自不同Process的Service请求
+ * 是RPC通信的核心调度器
+ * 它的职责是，管理注册的ServiceProvider，根据ServiceRequest的serviceName，将请求分发给对应的ServiceProvider
+ */
+export class MessagePortServiceManager {
+    private serviceProviders: Map<string, ProviderInfo>;
+    private pendingRequests: Map<number, { resolve: (result: any) => void; reject: (reason: any) => void }>;
+    constructor() {
         this.serviceProviders = new Map();
-        if (process.type === "utility") {
-            if (!parentPort) {
-                process.parentPort.on("message", (event) => {
-                    this.onParentPortMessage(event);
-                });
-            } else {
-                parentPort.on("message", (event) => {
-                    this.onParentPortMessage(event);
-                });
-            }
-        } else if (process.type === "browser") {
-            console.warn("MessagePortServiceManager not implemented for Main process");
-        } else if (process.type === "renderer") {
-            console.warn("MessagePortServiceManager not implemented for Renderer process");
-        }
-    }
-
-    public registerService(serviceName: string, service: IService): void {
-        if (this.services.has(serviceName)) {
-            console.warn(`Service ${serviceName} already registered`);
-            // TODO: Should we overwrite the service?
-            this.services.set(serviceName, service);
-            return;
-        }
-        this.services.set(serviceName, service);
+        this.pendingRequests = new Map();
+        process.parentPort.on("message", (event) => this.onParentPortMessage(event));
     }
 
     /**
-     * Handle message from parent process, which most likely is a request to register a service provider,
-     * the message event should include a MessagePortMain object. 
-     * @param event message event from parent process port
+     * 注册一个ServiceProvider，设为public仅为注册本进程的ServiceProvider，
+     * 来自其他进程的ServiceProvider注册消息（来自ParentPort）已经在内部监听处理
+     * @param providerId Provider的ID
+     * @param port 用于和Provider通信的MessagePort
      */
-    private onParentPortMessage(event: MessageEvent) {
-        const message = event.data as IProcessMessage;
-        switch (message.chennel) {
-            case "request-init-service-provider":
+    public registerServiceProvider(providerId: string, port: MessagePortMain | MessagePort) {
+        if (this.serviceProviders.has(providerId)) {
+            console.warn(`ServiceProvider ${providerId} already registered`);
+            // Should we overwrite the existing one?
+
+        }
+        if (port instanceof MessagePort) {
+            port.onmessage = (event) => this.onServiceProviderMessage(providerId, event as globalThis.MessageEvent);
+        } else {
+            port.on("message", (event) => this.onServiceProviderMessage(providerId, event as Electron.MessageEvent));
+        }
+
+        this.serviceProviders.set(providerId, { providerId, port, sevices: [] });
+        port.start();
+        console.log("ServiceProvider registered: ", providerId);
+    }
+
+    /**
+     * 处理来自Main Process的MessagePort消息
+     * @param event 来自Main Process的MessagePort消息对应的MessageEvent
+     * @returns void
+     * @description 目前只有一种消息需要处理，即来自Main Process的注册ServiceProvider的消息
+     * 其他的IPC消息，如请求ServiceList，都来自MessagePortServiceProvider，直接由
+     */
+    private onParentPortMessage(event: MessageEvent): void {
+        if (!isIpcMessage(event.data)) {
+            console.warn("Invalid message received: ", event.data);
+            return;
+        }
+
+        const message = event.data as IIpcMessage;
+        switch (message.channel) {
+            case "REGISTER_SERVICE_PROVIDER":
                 const [port] = event.ports;
                 if (!port) {
-                    throw new Error("No port in event");
+                    console.warn("No port come with service provider registration", event);
+                    return;
                 }
-                this.registerServiceProvider(message.providerId, port);
-                break;
-            case "plugin-manager-response":
-                if (this.services.has("PluginService")) {
-                    const service = this.services.get("PluginService") as PluginService;
-                    service.handlePluginManagerResponse(message);
-                } else {
-                    throw new Error("PluginService not registered");
-                }
+                this.registerServiceProvider(message.payload, port);
                 break;
             default:
-                throw new Error(`Unknown message chennel ${message.chennel}`);
+                console.warn("Invalid parent port IPC message channel: ", message);
+                break;
         }
-
     }
 
     /**
-     * Register a service provider, which is a MessagePortMain object.
-     * @param provider name of the service
-     * @param port MessagePortMain object
+     * 处理来自Provider的MessagePort消息，包括RPC消息和IPC消息
+     * @param messageFromProviderId 消息来自哪个Provider
+     * @param event Provider发来的MessageEvent
+     * @returns void
      */
-    private registerServiceProvider(provider: string, port: MessagePortMain): void {
-        if (this.serviceProviders.has(provider)) {
-            console.warn(`Service ${provider} already registered`);
-            // TODO: Should we overwrite the service provider?
-            port.on("message", (event) => {
-                this.onServiceProviderMessage(provider, event);
-            });
-
-            this.serviceProviders.set(provider, port);
-            port.start();
+    private onServiceProviderMessage(messageFromProviderId: string, event: globalThis.MessageEvent | Electron.MessageEvent): void {
+        if (isRpcMessage(event.data)) {
+            this.handleRpcMessage(messageFromProviderId, event.data as IRpcMessage);
+        } else if (isIpcMessage(event.data)) {
+            this.handleIpcMessage(messageFromProviderId, event.data as IIpcMessage);
+        } else {
+            console.warn("Invalid message received: ", event.data);
             return;
         }
-
-        port.on("message", (event) => {
-            this.onServiceProviderMessage(provider, event);
-        });
-
-        this.serviceProviders.set(provider, port);
-        port.start();
     }
 
     /**
-     * Handle message from service provider, 
-     * which most likely is a request to call a service.
-     * @param provider name of the service provider registered
-     * @param event message event from service provider
+     * 处理来自Provider的IPC消息，来自Main Process的IPC消息已经在onParentPortMessage中处理过了
+     * @param providerId 这个IPC消息来自哪个Provider
+     * @param message IPC消息
+     * @returns void
      */
-    private onServiceProviderMessage(provider: string, event: MessageEvent) {
-        if (!this.serviceProviders.has(provider)) {
-            throw new Error(`Service ${provider} not registered`);
-        }
-        const port = this.serviceProviders.get(provider);
-        const message = event.data as IRpcMessage;
-        switch (message.service) {
-            case "ServiceManagerSelf":
-                this.handleServiceManagerSelfMessage(port, message);
+    private handleIpcMessage(providerId: string, message: IIpcMessage) {
+        switch (message.channel) {
+            case REQUEST_SERVICE_LIST:
+                switch (message.direction) {
+                    case "REQUEST":
+                        this.handleServiceListRequest(providerId, message);
+                        break;
+                    case "RESPONSE":
+                        console.log("Handling service list response from provider: ", providerId, "response id: ", message.id);
+                        const request = this.pendingRequests.get(message.id);
+                        if (!request) {
+                            console.warn("No pending request found for message: ", message);
+                            return;
+                        }
+                        this.pendingRequests.delete(message.id);
+                        request.resolve(message.payload as IServiceInfo[]);
+                        break;
+                    default:
+                        console.warn("Invalid message direction: ", message);
+                        break;
+                }
                 break;
             default:
-                this.handleServiceMessage(port, message);
+                console.warn("Invalid IPC message channel: ", message);
                 break;
         }
     }
+    /**
+     * 处理来自Provider的ServiceList请求
+     * @param providerId 这个ServiceList请求来自哪个Provider
+     * @returns void
+     * @description 该方法会向所有的Provider发送REQUEST_SERVICE_LIST的IPC消息，然后等待所有Provider的响应
+     * Provider的响应是一个IServiceInfo[]，包含了Provider中所有的Service信息
+     * 该方法会将所有Provider的IServiceInfo[]合并成一个IServiceInfo[]，然后将这个IServiceInfo[]作为响应返回给Provider
+     */
+    private handleServiceListRequest(providerId: string, message: IIpcMessage) {
+        console.log("Handling service list request from provider: ", providerId);
+        const promiseList: Promise<IServiceInfo[]>[] = [];
+        for (const [provider, info] of this.serviceProviders) {
+            const servicesInProviderPromise = this.requestServiceListFromProvider(provider, info.port);
+            promiseList.push(servicesInProviderPromise);
+        }
+        Promise.all(promiseList).then((servicesInProvider) => {
+            console.log("All service list responses received: ", servicesInProvider);
+            const results: IServiceInfo[] = [];
+            for (const services of servicesInProvider) {
+                results.push(...services);
+            }
+            console.log("Service list response: ", results);
+            const response: IIpcMessage = {
+                id: message.id,
+                type: "IPC",
+                direction: "RESPONSE",
+                channel: "REQUEST_SERVICE_LIST",
+                payload: results,
+            };
+            const providerInfo = this.serviceProviders.get(providerId);
+            if (!providerInfo) {
+                console.warn("No provider port found for provider: ", providerId);
+                return;
+            }
+            providerInfo.port.postMessage(response);
+        });
+
+    }
 
     /**
-     * Handle message from service provider, 
-     * which most likely is a request to call a service.
-     * @param port MessagePortMain object
-     * @param message message from service provider
+     * 向指定Provider发送一个IPC消息，请求指定Provider的Service列表
+     * @param providerId Provider的ID
+     * @param providerPort Provider的MessagePort
+     * @returns Promise<IServiceInfo[]>
+     * @description 该方法会向指定的Provider发送REQUEST_SERVICE_LIST的IPC消息，然后等待Provider的响应
+     * Provider的响应是一个IServiceInfo[]，包含了Provider中所有的Service信息
+     * 该方法返回一个Promise，当Provider响应时，Promise会resolve，返回IServiceInfo[]
      */
-    private handleServiceMessage(port: MessagePortMain | MessagePort, message: IRpcMessage) {
+    private requestServiceListFromProvider(providerId: string, providerPort: MessagePort | MessagePortMain): Promise<IServiceInfo[]> {
+        const request: IIpcMessage = {
+            id: Date.now() + Math.floor(Math.random()*10),
+            type: "IPC",
+            direction: "REQUEST",
+            channel: "REQUEST_SERVICE_LIST",
+            payload: providerId,
+        };
 
-        const service = this.services.get(message.service);
+        return new Promise<IServiceInfo[]>((resolve, reject) => {
+            console.log("Requesting service list from provider: ", providerId, "requiest id: ", request.id);
+            this.pendingRequests.set(request.id, { resolve, reject });
+            providerPort.postMessage(request);
+        });
+    }
 
-        if (!service || !service[message.method]) {
-            const undefinedMessage: IRpcMessage = {
-                id: message.id,
-                service: message.service,
-                method: message.method,
-                params: message.params
-            };
-            port.postMessage(undefinedMessage);
+    /**
+     * 处理来自Provider的RPC消息
+     * @param messageFromProviderId 这个RPC消息来自哪个Provider
+     * @param message RPC消息
+     * @returns void
+     * @description 该方法会将RPC消息转发给RPC消息的目标Provider。由于RPC
+     */
+    private handleRpcMessage(messageFromProviderId: string, message: IRpcMessage) {
+        const messageToProviderInfo = this.serviceProviders.get(message.to);
+        if (!messageToProviderInfo) {
+            console.warn(`No such provider ${message.to} for message: `, message);
             return;
         }
-        const method = service[message.method];
-        method.apply(service, message.params).then((result: any) => {
-            const response: IRpcMessage = {
-                id: message.id,
-                service: message.service,
-                method: message.method,
-                params: message.params,
-                result,
-            };
-            port.postMessage(response);
-        }).catch((error: any) => {
-            const response: IRpcMessage = {
-                id: message.id,
-                service: message.service,
-                method: message.method,
-                params: message.params,
-                error,
-            };
-            port.postMessage(response);
-        });
+        const messageToProviderPort = messageToProviderInfo.port;
+        messageToProviderPort.postMessage(message);
     }
 
-    /**
-     * Handle message from service provider, 
-     * which most likely is a request to call a service.
-     * @param port MessagePortMain object
-     * @param message message from service provider
-     */
-    private handleServiceManagerSelfMessage(port: MessagePortMain | MessagePort, message: IRpcMessage) {
-        switch (message.method) {
-            case "getServices":
-                const response: IRpcMessage = {
-                    id: message.id,
-                    service: message.service,
-                    method: message.method,
-                    params: message.params,
-                    result: []
-                };
-                this.services.forEach((value, key) => {
-                    response.result.push({
-                        name: key,
-                        methods: Object.keys(value)
-                    });
-                });
-                port.postMessage(response);
-                break;
-            default:
-                throw new Error(`Unknown method ${message.method}`);
-        }
 
-    }
+
 }
