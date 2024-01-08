@@ -1,34 +1,33 @@
 import { MessageChannelMain, MessagePortMain } from "electron";
-import { IServiceInfo, REGISTER_SERVICE_PROVIDER, isIpcMessage } from "./../rpc/IMessage";
+import { IMessage, IServiceInfo, REGISTER_SERVICE_PROVIDER, isIpcMessage, isMessage, isRpcMessage } from "./../rpc/IMessage";
 import { IAppService, IService } from "@/services/IService";
-import { IIpcMessage, IRpcMessage, REQUEST_SERVICE_LIST, isRpcMessage } from "./IMessage";
+import { IIpcMessage, IRpcMessage } from "./IMessage";
+import { IServiceProvider } from "./IServiceProvider";
 
 /**
  * MessagePortServiceProvider
  * 基于MessagePort的ServiceProvider，运行在任何需要提供或者消费Service的Process中
  * 它的职责是，注册自己提供的Service，以及处理来自其他Process的Service请求
+ * 同时它也是个IOC容器，负责管理Service的生命周期
  */
-export class MessagePortServiceProvider {
+export class MessagePortServiceProvider implements IServiceProvider {
     private managerPort: MessagePort | MessagePortMain | null; // MessagePort to ServiceManager
-    private localService: Map<string, IService>; // Local registered Service
-    private remoteService: Map<string, IService>; // Remote Service
     private pendingCalls: Map<number, { resolve: (value: any) => void, reject: (reason: any) => void }>;
     private postIpcMessage: (message: IIpcMessage, transfer?: MessagePortMain[] | MessagePort[]) => void;
     private providerId: string;
-    public AppServices: IAppService;
+    private serviceInstances: Map<string, IService>;
+
     constructor(postIpcMessage: (message: IIpcMessage, transfer: MessagePortMain[] | MessagePort[]) => void) {
-        this.localService = new Map();
         this.managerPort = null;
         this.postIpcMessage = postIpcMessage;
         this.providerId = `${process.type}-${process.pid}`;
-        this.AppServices = {};
-        this.remoteService = new Map();
         this.pendingCalls = new Map();
+        this.serviceInstances = new Map();
 
+        // Register self as a service provider to ServiceManager
         const registerServiceProviderMessage: IIpcMessage = {
             id: Date.now() + Math.floor(Math.random() * 10),
             type: "IPC",
-            direction: "REQUEST",
             channel: REGISTER_SERVICE_PROVIDER,
             payload: this.providerId,
         };
@@ -52,155 +51,35 @@ export class MessagePortServiceProvider {
                 break;
         }
     }
-
-
-    public registerService(serviceName: string, service: IService) {
-        this.localService.set(serviceName, service);
-    }
-
-
-    public async getServices(): Promise<IAppService> {
-        const requestServiceListMessage: IIpcMessage = {
-            id: Date.now() + Math.floor(Math.random() * 10),
-            type: "IPC",
-            direction: "REQUEST",
-            channel: REQUEST_SERVICE_LIST,
-            payload: this.providerId,
-        };
-        const remoteServiceList = await new Promise<IServiceInfo[]>((resolve, reject) => {
-            console.log("Requesting service list from manager, message: ", requestServiceListMessage);
-            this.managerPort.postMessage(requestServiceListMessage);
-            this.pendingCalls.set(requestServiceListMessage.id, { resolve, reject });
-        });
-
-        // Local service
-        for (const [service, instance] of this.localService) {
-            const proxiedLocalServiceInstant: IService = {};
-            const methods = this.getServiceInstanceMethodList(instance);
-            for (const method of methods) {
-                proxiedLocalServiceInstant[method] = (...args: any[]) => {
-                    return instance[method](...args);
-                }
-            }
-            this.AppServices[service] = proxiedLocalServiceInstant;
+    public AppServices(): IAppService {
+        const services = {} as IAppService;
+        for (const [key, value] of this.serviceInstances) {
+            services[key] = value;
         }
-        // Remote service
-        for (const serviceInfo of remoteServiceList) {
-            const { service, providerId, methods } = serviceInfo;
-
-            const remoteService: IService = {};
-            for (const method of methods) {
-                remoteService[method] = (...args: any[]) => {
-                    return this.callRemote(providerId, service, method, ...args);
-                }
-            }
-            this.remoteService.set(service, remoteService);
-            this.AppServices[service] = remoteService;
-        }
-        return this.AppServices;
+        return services;
     }
-
-
     private async onManagerMessage(event: MessageEvent | Electron.MessageEvent) {
         if (isRpcMessage(event.data)) {
-            const { direction } = event.data;
-            switch (direction) {
+            switch (event.data.direction) {
                 case "REQUEST":
                     await this.handleRpcRequest(event.data);
                     break;
                 case "RESPONSE":
-                    this.handleRpcResponse(event.data);
+                    this.handleResponse(event.data);
                     break;
                 default:
-                    console.warn("Invalid message direction: ", direction);
+                    console.warn("Invalid message direction: ", event.data.direction);
                     break;
             }
         } else if (isIpcMessage(event.data)) {
-            const { direction } = event.data;
-            switch (direction) {
-                case "REQUEST":
-                    this.handleIpcRequest(event.data);
-                    break;
-                case "RESPONSE":
-                    this.handleIpcResponse(event.data);
-                    break;
-                default:
-                    console.warn("Invalid message direction: ", direction);
-                    break;
-            }
-        } else {
-            console.warn("Invalid message received: ", event.data);
-            return;
+            this.handleIpcMessage(event.data);
         }
     }
 
-    private async handleRpcRequest(message: IRpcMessage) {
-        const { service, method, payload, id, from, to } = message;
-        if (to !== this.providerId || !this.localService.has(service)) {
-            console.warn("Wrong provider. requesting message: ", message);
-            const responseMessage: IRpcMessage = {
-                id,
-                type: "RPC",
-                direction: "RESPONSE",
-                from: this.providerId,
-                to: from,
-                service,
-                method,
-                payload: new Error("Service not found"),
-            };
-            this.managerPort.postMessage(responseMessage);
-            return;
-        }
-        const serviceInstance = this.localService.get(service);
-        if (!serviceInstance) {
-            console.warn("Service instance not found: ", service);
-            const responseMessage: IRpcMessage = {
-                id,
-                type: "RPC",
-                direction: "RESPONSE",
-                from: this.providerId,
-                to: from,
-                service,
-                method,
-                payload: new Error("Service instance not found"),
-            };
-            this.managerPort.postMessage(responseMessage);
-            return;
-        }
-        if (!serviceInstance[method] && typeof serviceInstance[method] !== "function") {
-            console.warn("Method not found: ", method);
-            const responseMessage: IRpcMessage = {
-                id,
-                type: "RPC",
-                direction: "RESPONSE",
-                from: this.providerId,
-                to: from,
-                service,
-                method,
-                payload: new Error("Method not found"),
-            };
-            this.managerPort.postMessage(responseMessage);
-            return;
-        }
-        // Calling local service method
-        const result = await serviceInstance[method](...payload);
-        const responseMessage: IRpcMessage = {
-            id,
-            type: "RPC",
-            direction: "RESPONSE",
-            from: this.providerId,
-            to: from,
-            service,
-            method,
-            payload: result,
-        };
-        this.managerPort.postMessage(responseMessage);
-    }
-
-    private handleRpcResponse(message: IRpcMessage) {
+    private handleResponse(message: IMessage) {
         const { id, payload } = message;
         if (!this.pendingCalls.has(id)) {
-            console.warn("Pending call not found for RPC response message: ", message);
+            console.warn("Pending call not found for response message: ", message);
             return;
         }
         const { resolve, reject } = this.pendingCalls.get(id) as { resolve: (value: any) => void, reject: (reason: any) => void };
@@ -209,64 +88,10 @@ export class MessagePortServiceProvider {
         } else {
             resolve(payload);
         }
+        this.pendingCalls.delete(id);
     }
 
-    private handleIpcResponse(message: IIpcMessage) {
-        console.log("IPC response message: ", message);
-        const { channel, payload, id } = message;
-        switch (channel) {
-            case REQUEST_SERVICE_LIST:
-                const request = this.pendingCalls.get(id);
-                if (!request) {
-                    console.warn("No pending request found for IPC message: ", message);
-                    return;
-                }
-                this.pendingCalls.delete(id);
-                if (payload instanceof Error) {
-                    request.reject(payload);
-                } else {
-                    request.resolve(payload);
-                }
-                break;
-            default:
-                console.warn("Invalid channel: ", channel);
-                break;
-        }
-    }
-
-    private handleIpcRequest(message: IIpcMessage) {
-        const { channel, payload, id } = message;
-        switch (channel) {
-            case REQUEST_SERVICE_LIST:
-                if (payload !== this.providerId) {
-                    console.warn("Wrong provider id: ", payload);
-                    return;
-                }
-                const serviceList: IServiceInfo[] = [];
-
-                for (const [name, instance] of this.localService) {
-                    serviceList.push({
-                        service: name,
-                        providerId: this.providerId,
-                        methods: this.getServiceInstanceMethodList(instance),
-                    });
-                }
-                const responseMessage: IIpcMessage = {
-                    id,
-                    type: "IPC",
-                    direction: "RESPONSE",
-                    channel,
-                    payload: serviceList,
-                };
-                this.managerPort.postMessage(responseMessage);
-                break;
-            default:
-                console.warn("Invalid channel: ", channel);
-                break;
-        }
-    }
-
-    private callRemote(providerId: string, service: string, method: string, ...args: any[]): Promise<any> {
+    private call(service: string, method: string, ...args: any[]): Promise<any> {
         if (!this.managerPort) {
             throw new Error("ServiceManager not initialized");
         }
@@ -276,8 +101,6 @@ export class MessagePortServiceProvider {
             id,
             type: "RPC",
             direction: "REQUEST",
-            from: this.providerId,
-            to: providerId,
             service,
             method,
             payload: args,
@@ -286,8 +109,104 @@ export class MessagePortServiceProvider {
             this.pendingCalls.set(id, { resolve, reject });
             this.managerPort.postMessage(message);
         });
+    }
+
+    private handleIpcMessage(message: IIpcMessage) {
+        switch (message.channel) {
+            case "REGISTER_SERVICE":
+                const serviceInfo = message.payload as IServiceInfo;
+                if (serviceInfo.providerId === this.providerId) {
+                    console.warn(`Service ${serviceInfo.service} registered by provider ${serviceInfo.providerId}, but message come from provider ${this.providerId}`);
+                    return;
+                }
+                this.registerServiceInfo(serviceInfo);
+                break;
+            default:
+                console.warn("Invalid IPC message channel: ", message.channel);
+                break;
+        }
+    }
+
+    private async handleRpcRequest(message: IRpcMessage) {
+        const { service, method, payload } = message;
+        // TODO: get service instance from container
+        const serviceInstance = this.serviceInstances.get(service);
+        if (!serviceInstance) {
+            console.warn("Service not found: ", service);
+            const responseMessage: IRpcMessage = {
+                id: message.id,
+                type: "RPC",
+                direction: "RESPONSE",
+                service,
+                method,
+                payload: new Error("Service not found"),
+            };
+            this.managerPort.postMessage(responseMessage);
+            return;
+        }
+        if (!serviceInstance[method] || typeof serviceInstance[method] !== "function") {
+            console.warn("Method not found: ", method);
+            const responseMessage: IRpcMessage = {
+                id: message.id,
+                type: "RPC",
+                direction: "RESPONSE",
+                service,
+                method,
+                payload: new Error("Method not found"),
+            };
+            this.managerPort.postMessage(responseMessage);
+            return;
+        }
+        const result = await serviceInstance[method](...payload);
+        const responseMessage: IRpcMessage = {
+            id: message.id,
+            type: "RPC",
+            direction: "RESPONSE",
+            service,
+            method,
+            payload: result,
+        };
+        this.managerPort.postMessage(responseMessage);
+    }
 
 
+    private resolve<T extends IService>(target: new (...args: (IService | undefined)[]) => T): T {
+        const STRIP_COMMENTS = /((\/\/.*$)|(\/\*[\s\S]*?\*\/))/mg;
+        const ARGUMENT_NAMES = /([^\s,]+)/g;
+
+        const fnStr = target.toString().replace(STRIP_COMMENTS, '');
+        const paramNames = fnStr.slice(fnStr.indexOf('(') + 1, fnStr.indexOf(')')).match(ARGUMENT_NAMES);
+        if (paramNames === null) {
+            return new target();
+        }
+
+        const dependencies = paramNames.map((name: string) => {
+            const dependency = this.serviceInstances.get(name);
+            if (!dependency) {
+                throw new Error(`Dependency '${name}' not found.`);
+            }
+            return dependency;
+        });
+
+        return new target(...dependencies);
+    }
+
+    public registerService(name: string, service: new (...args: (IService | undefined)[]) => IService) {
+
+        const instance = this.resolve(service);
+        const serviceInfo: IServiceInfo = {
+            service: name,
+            providerId: this.providerId,
+            methods: this.getServiceInstanceMethodList(instance),
+        };
+        this.serviceInstances.set(name, instance);
+        const registerServiceMessage: IIpcMessage = {
+            id: Date.now() + Math.floor(Math.random() * 10),
+            type: "IPC",
+            channel: "REGISTER_SERVICE",
+            payload: serviceInfo
+        };
+        this.managerPort.postMessage(registerServiceMessage);
     }
 
     private getServiceInstanceMethodList(instance: IService): string[] {
@@ -302,4 +221,20 @@ export class MessagePortServiceProvider {
         });
         return methods;
     }
+
+
+    private registerServiceInfo(serviceInfo: IServiceInfo) {
+        console.log("Register remote service: ", serviceInfo)
+        const proxiedService: IService = {
+
+        }
+        for (const method of serviceInfo.methods) {
+            proxiedService[method] = (...args: any[]) => {
+                return this.call(serviceInfo.service, method, ...args);
+            };
+        }
+        this.serviceInstances.set(serviceInfo.service, proxiedService as IService);
+        console.log("After register, the app service is: ", this.AppServices())
+    }
+
 }

@@ -1,19 +1,16 @@
-import { IRpcMessage } from "@/common/rpc/IMessage";
+import { IIpcMessage } from "@/common/rpc/IMessage";
 import { IConfig } from "@/data/config/IConfig";
 import { IPlugin, PluginManifest, isValidPluginManifest } from "@/plugins/PluginManifest";
 import fs from "fs";
 import path from "path";
 
+type InstalledPlugin = {
+    dir: string;
+} & IPlugin;
+
 export class PluginService {
     private cofnig: IConfig;
-    private plugins: Map<string, {
-        manifest: PluginManifest,
-        dir: string,
-        status: {
-            running: boolean,
-            visible: boolean,
-        }
-    }>;
+    private plugins: Map<string, InstalledPlugin>;
     private pendingCalls: Map<number, { resolve: (value: any) => void, reject: (reason: any) => void }>;
     constructor(config: IConfig) {
         this.cofnig = config;
@@ -25,17 +22,7 @@ export class PluginService {
         this.pendingCalls = new Map();
     }
 
-    getPlugins = async (): Promise<IPlugin[]> => {
-        if (this.plugins.size > 0) {
-            return Array.from(this.plugins.values()).map((plugin) => {
-                return {
-                    manifest: plugin.manifest,
-                    status: plugin.status.running ? "enabled" : "disabled",
-                } as IPlugin;
-            });
-        }
-        // Find any package.json files in the subdirectories of the plugins directory
-
+    async getInstalledPlugins(): Promise<IPlugin[]> {
         const installedPlugins = await Promise.all((await fs.promises.readdir(this.cofnig.plugins.plugin_dir)).filter((dir) => {
             const packageJsonPath = path.join(this.cofnig.plugins.plugin_dir, dir, "package.json");
             try {
@@ -48,7 +35,6 @@ export class PluginService {
                     console.warn(`Invalid plugin manifest at ${packageJsonPath}`);
                     return false;
                 }
-
                 return true;
             } catch (e) {
                 console.warn(`Failed to read plugin manifest at ${packageJsonPath}`, e);
@@ -58,149 +44,53 @@ export class PluginService {
             const packageJsonPath = path.join(this.cofnig.plugins.plugin_dir, dir, "package.json");
             const contnet = await fs.promises.readFile(packageJsonPath, "utf-8");
             const manifest = JSON.parse(contnet);
-            return {
-                manifest,
-                dir,
-                status: {
-                    running: false,
-                    visible: false,
-                },
-            };
+            if (this.cofnig.plugins.enabled_plugins.includes(manifest.name)) {
+                await this.enablePlugin(manifest, dir);
+                return {
+                    manifest,
+                    dir,
+                    status: "enabled"
+                } as InstalledPlugin
+            } else {
+                await this.disablePlugin(manifest);
+                return {
+                    manifest,
+                    dir,
+                    status: "disabled"
+                } as InstalledPlugin
+            }
         }));
-
+        this.plugins.clear();
         for (const plugin of installedPlugins) {
-            if (this.cofnig.plugins.enabled_plugins.includes(plugin.manifest.name)) {
-                await this.enablePlugin(plugin.manifest);
-                this.plugins.set(plugin.manifest.name, {
-                    ...plugin,
-                    status: {
-                        ...plugin.status,
-                        running: true,
-                    }
-                });
-            } else {
-                this.plugins.set(plugin.manifest.name, plugin);
-            }
+            this.plugins.set(plugin.manifest.name, plugin);
         }
+        return installedPlugins;
+    }
 
-        return Array.from(this.plugins.values()).map((plugin) => {
-            return {
-                manifest: plugin.manifest,
-                status: plugin.status.running ? "enabled" : "disabled",
-            } as IPlugin;
-        });
-    };
-
-    enablePlugin = async (manifest: PluginManifest) => {
-        return new Promise((resolve, reject) => {
-            const callId = Date.now();
-            this.pendingCalls.set(callId, { resolve, reject });
-            const plugin = this.plugins.get(manifest.name);
-            if (!plugin) {
-                console.error("Plugin not found", manifest);
-                return "error";
-            }
-            const startPluginMessage: IRpcMessage = {
-                id: callId,
-                type: "RPC",
-                direction: "REQUEST",
-                method: "startPlugin",
-                params: { manifest: plugin.manifest, dir: path.join(this.cofnig.plugins.plugin_dir, plugin.dir) },
-            };
-            process.parentPort.postMessage(startPluginMessage);
+    async enablePlugin(manifest: PluginManifest, dir: string): Promise<void> {
+        const enablePluginMessage: IIpcMessage = {
+            id: Date.now() + Math.floor(Math.random() * 10),
+            type: "IPC",
+            channel: PLUGIN_OPERATION,
+            payload: { operation: "enable", manifest, dir }
+        };
+        return new Promise<void>((resolve, reject) => {
+            this.pendingCalls.set(enablePluginMessage.id, { resolve, reject });
+            process.parentPort.postMessage(enablePluginMessage);
         });
     }
 
-    disablePlugin = async (manifest: PluginManifest) => {
-        return new Promise((resolve, reject) => {
-            const callId = Date.now();
-            this.pendingCalls.set(callId, { resolve, reject });
-            const plugin = this.plugins.get(manifest.name);
-            if (!plugin) {
-                console.error("Plugin not found", manifest);
-                return "error";
-            }
-            const stopPluginMessage: IProcessMessage = {
-                callId,
-                chennel: "plugin-manager-request",
-                method: "stopPlugin",
-                params: { manifest },
-            };
-            process.parentPort.postMessage(stopPluginMessage);
+    async disablePlugin(manifest: PluginManifest): Promise<void> {
+        const disablePluginMessage: IIpcMessage = {
+            id: Date.now() + Math.floor(Math.random() * 10),
+            type: "IPC",
+            channel: PLUGIN_OPERATION,
+            payload: { action: "disable", manifest }
+        };
+        return new Promise<void>((resolve, reject) => {
+            this.pendingCalls.set(disablePluginMessage.id, { resolve, reject });
+            process.parentPort.postMessage(disablePluginMessage);
         });
     }
-
-    handlePluginManagerResponse = (message: IPluginManagerMessage) => {
-        const call = this.pendingCalls.get(message.callId);
-        switch (message.chennel) {
-            case "plugin-manager-response":
-                switch (message.method) {
-                    case "startPlugin":
-                        this.startPluginCallback(message, call);
-                        break;
-                    case "stopPlugin":
-                        this.stopPluginCallback(message, call);
-                        break;
-                    default:
-                        throw new Error(`Unknown method ${message.method}`);
-                }
-                break;
-            default:
-                throw new Error(`Unknown channel ${message.chennel}`);
-        }
-    }
-
-    private startPluginCallback(message: IPluginManagerMessage, call: { resolve: (value: any) => void, reject: (reason: any) => void }) {
-        if (message.result === "ok") {
-            const plugin = this.plugins.get(message.params.manifest.name);
-            if (plugin) {
-                if (plugin.status.running) {
-                    console.warn("Plugin is already running", plugin);
-                    call.resolve("Plugin is already running");
-                } else {
-                    this.plugins.set(message.params.manifest.name, {
-                        ...plugin,
-                        status: {
-                            ...plugin.status,
-                            running: true,
-                        },
-                    });
-                    call.resolve("ok");
-                }
-            } else {
-                call.reject("Plugin not found when ");
-            }
-        } else {
-            call.reject(message.result);
-        }
-    }
-
-    private stopPluginCallback(message: IPluginManagerMessage, call: { resolve: (value: any) => void, reject: (reason: any) => void }) {
-        if (message.result === "ok") {
-            const plugin = this.plugins.get(message.params.manifest.name);
-            if (plugin) {
-                if (plugin.status.running) {
-                    this.plugins.set(message.params.manifest.name, {
-                        ...plugin,
-                        status: {
-                            ...plugin.status,
-                            running: false,
-                        },
-                    });
-                    call.resolve("ok");
-                } else {
-                    console.warn("Plugin is already stopped", plugin);
-                    call.resolve("Plugin is already stopped");
-                }
-            } else {
-                call.reject("Plugin not found");
-            }
-        } else {
-            call.reject(message.result);
-        }
-    }
-
-
-
 
 }

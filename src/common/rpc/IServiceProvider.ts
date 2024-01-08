@@ -1,6 +1,6 @@
 import { IAppService, IService } from "@/services/IService";
 
 export interface IServiceProvider {
-    getServices(): Promise<IAppService>;
-    registerService(serviceName: string, service: IService): void;
+    AppServices(): IAppService;
+    registerService(name: string, service: new (...args: (IService | undefined)[]) => IService): void;
 }

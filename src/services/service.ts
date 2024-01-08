@@ -16,6 +16,6 @@ const ServiceProvider = new MessagePortServiceProvider((message, transfer) => {
         console.warn("Invalid Service provider message channel: ", message);
     }
 });
-ServiceProvider.registerService("PaperService", new PaperService());
-ServiceProvider.registerService("DropService", new DropService());
+ServiceProvider.registerService("PaperService", PaperService);
+ServiceProvider.registerService("DropService", DropService);
 
