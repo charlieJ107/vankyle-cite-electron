@@ -12,3 +12,8 @@ export interface IAppService {
     DropService: DropService;
     [key: string]: IService;
 }
+
+export function Dependency(id: string) {
+    return function (target: any, context: ClassFieldDecoratorContext) {
+    }
+}

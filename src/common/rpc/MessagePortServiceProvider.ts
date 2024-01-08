@@ -16,6 +16,7 @@ export class MessagePortServiceProvider implements IServiceProvider {
     private postIpcMessage: (message: IIpcMessage, transfer?: MessagePortMain[] | MessagePort[]) => void;
     private providerId: string;
     private serviceInstances: Map<string, IService>;
+    private dependencies: Map<string, IService>;
 
     constructor(postIpcMessage: (message: IIpcMessage, transfer: MessagePortMain[] | MessagePort[]) => void) {
         this.managerPort = null;
@@ -181,7 +182,7 @@ export class MessagePortServiceProvider implements IServiceProvider {
         }
 
         const dependencies = paramNames.map((name: string) => {
-            const dependency = this.serviceInstances.get(name);
+            const dependency = this.dependencies.get(name);
             if (!dependency) {
                 throw new Error(`Dependency '${name}' not found.`);
             }
