@@ -33,7 +33,7 @@ export class MessagePortRpcManager {
     }
     public registerAgent(agentId: string, port: MessagePortMain | MessagePort) {
         if (this.providers.has(agentId)) {
-            console.warn(`ServiceProvider ${agentId} already registered, overwriting...`);
+            console.warn(`Agent ${agentId} already registered, overwriting...`);
             // We should overwrite the existing one, as the new service provider created a new MessagePort for communication
         }
         if (port instanceof MessagePort) {
@@ -44,7 +44,7 @@ export class MessagePortRpcManager {
 
         this.providers.set(agentId, port);
         port.start();
-        console.log("ServiceProvider registered: ", agentId);
+        console.log("Agent registered: ", agentId);
     }
 
     private onAgentMessage(providerId: string, event: globalThis.MessageEvent | Electron.MessageEvent): void {

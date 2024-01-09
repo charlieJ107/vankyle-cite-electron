@@ -16,3 +16,7 @@ const ServiceAgent = new MessagePortRpcAgent((message, transfer) => {
         console.warn("Invalid Service provider message channel: ", message);
     }
 });
+
+ServiceAgent.register("getAllPapers", async () => {
+    return Promise.resolve([]);
+});
