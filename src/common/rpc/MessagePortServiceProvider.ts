@@ -114,7 +114,7 @@ export class MessagePortServiceProvider implements IServiceProvider {
     }
 
     private handleControlMessage(message: IControlMessage) {
-        switch (message.channel) {
+        switch (message.command) {
             case "REGISTER_SERVICE":
                 const serviceInfo = message.payload as IServiceInfo;
                 if (serviceInfo.providerId === this.providerId) {
@@ -124,7 +124,7 @@ export class MessagePortServiceProvider implements IServiceProvider {
                 this.registerServiceInfo(serviceInfo);
                 break;
             default:
-                console.warn("Invalid Control message channel: ", message.channel);
+                console.warn("Invalid Control message channel: ", message.command);
                 break;
         }
     }
@@ -203,7 +203,7 @@ export class MessagePortServiceProvider implements IServiceProvider {
         const registerServiceMessage: IControlMessage = {
             id: Date.now() + Math.floor(Math.random() * 10),
             type: "CONTROL",
-            channel: "REGISTER_SERVICE",
+            command: "REGISTER_SERVICE",
             payload: serviceInfo
         };
         this.managerPort.postMessage(registerServiceMessage);

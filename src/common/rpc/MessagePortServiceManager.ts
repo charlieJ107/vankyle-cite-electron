@@ -94,7 +94,7 @@ export class MessagePortServiceManager {
      */
     private handleControlMessage(providerId: string, message: IControlMessage) {
         console.log("Handling Control message from provider: ", providerId, "message id: ", message.id);
-        switch (message.channel) {
+        switch (message.command) {
             case REGISTER_SERVICE:
                 const serviceInfo = message.payload as IServiceInfo;
                 if (serviceInfo.providerId !== providerId) {
@@ -227,7 +227,7 @@ export class MessagePortServiceManager {
             const message: IControlMessage = {
                 id: Date.now() + Math.floor(Math.random() * 10),
                 type: "CONTROL",
-                channel: REGISTER_SERVICE,
+                command: REGISTER_SERVICE,
                 payload: serviceInfo
             };
             console.log("Sending service registration message to provider: ", provider, "message: ", message);

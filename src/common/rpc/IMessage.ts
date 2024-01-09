@@ -19,7 +19,7 @@ export interface IIpcMessage extends IMessage {
 
 export interface IControlMessage extends IMessage {
     type: "CONTROL";
-    channel: "REGISTER_SERVICE";
+    command: "REGISTER_SERVICE";
 }
 
 export interface IServiceInfo {
