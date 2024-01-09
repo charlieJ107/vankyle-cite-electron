@@ -1,4 +1,4 @@
-import { MessagePortRpcAgent } from "@/common/rpc/MessagePortServiceAgent";
+import { MessagePortRpcAgent } from "@/common/rpc/MessagePortRpcAgent";
 
 export function Service() {
     return function (value: new (...args: any[]) => any, context: ClassDecoratorContext) {

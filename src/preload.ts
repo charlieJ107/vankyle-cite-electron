@@ -2,7 +2,7 @@
 // https://www.electronjs.org/docs/latest/tutorial/process-model#preload-scripts
 
 import { contextBridge, ipcRenderer } from "electron";
-import { MessagePortRpcAgent } from "@/common/rpc/MessagePortServiceAgent";
+import { MessagePortRpcAgent } from "@/common/rpc/MessagePortRpcAgent";
 import { REGISTER_AGENT } from "./common/rpc/IMessages";
 
 const AppServiceProvider = new MessagePortRpcAgent((message, transfer) => {

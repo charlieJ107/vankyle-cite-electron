@@ -1,12 +1,12 @@
 import { MessagePortMain, MessageEvent } from "electron";
-import { IIpcMessage, REGISTER_AGENT, isIpcMessage } from "./IMessages";
+import { IIpcMessage, REGISTER_AGENT, isControlMessage, isIpcMessage, isRpcMessage } from "./IMessages";
 
 export class MessagePortRpcManager {
     private providers: Map<string, MessagePort | MessagePortMain>;
-    private pendingRequests: Map<number, { resolve: (result: any) => void; reject: (reason: any) => void }>;
+    private pendingCalls: Map<number, { resolve: (result: any) => void; reject: (reason: any) => void }>;
     constructor() {
         this.providers = new Map();
-        this.pendingRequests = new Map();
+        this.pendingCalls = new Map();
         process.parentPort.on("message", (event) => this.onParentPortMessage(event));
     }
     private onParentPortMessage(event: MessageEvent): void {
@@ -47,6 +47,48 @@ export class MessagePortRpcManager {
     }
 
     private onAgentMessage(providerId: string, event: globalThis.MessageEvent | Electron.MessageEvent): void {
+        if(isRpcMessage(event.data)) {
+            const message = event.data;
+            switch (message.direction) {
+                case "REQUEST":
+                    this.onRpcRequest(providerId, message);
+                    break;
+                case "RESPONSE":
+                    this.onResponse(message);
+                    break;
+                default:
+                    console.warn("Invalid RPC message direction: ", message);
+                    break;
+            }
+        } else if (isControlMessage(event.data)) {
+            switch (event.data.command) {
+                case "REGISTER":
+                    // TODO
+                    break;
+                default:
+                    console.warn("Invalid Control message command: ", event.data);
+                    break;
+            }
+        } else {
+            console.warn("Invalid message received, expected RPC or Control message: ", event.data);
+        }
+    }
+
+    private onRpcRequest(providerId: string, message: any) {
         // TODO
+    }
+    private onResponse(message: any) {
+        const { id, payload } = message;
+        if (!this.pendingCalls.has(id)) {
+            console.warn("Pending call not found for response message: ", message);
+            return;
+        }
+        const { resolve, reject } = this.pendingCalls.get(id) as { resolve: (value: any) => void, reject: (reason: any) => void };
+        if (payload instanceof Error) {
+            reject(payload);
+        } else {
+            resolve(payload);
+        }
+        this.pendingCalls.delete(id);
     }
 }

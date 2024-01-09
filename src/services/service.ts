@@ -4,7 +4,7 @@
 
 import { REGISTER_AGENT } from "@/common/rpc/IMessages";
 import { MessagePortRpcManager } from "@/common/rpc/MessagePortRpcManager";
-import { MessagePortRpcAgent } from "@/common/rpc/MessagePortServiceAgent";
+import { MessagePortRpcAgent } from "@/common/rpc/MessagePortRpcAgent";
 
 const RpcManager = new MessagePortRpcManager();
 
