@@ -13,7 +13,18 @@ export interface IAppService {
     [key: string]: IService;
 }
 
-export function Dependency(id: string) {
-    return function (target: any, context: ClassFieldDecoratorContext) {
+export function ServiceDependency(id: string) {
+    return function (target: Function, context: ClassDecoratorContext) {
+        context.addInitializer(() => {
+            
+        });
+    }
+}
+
+export function DependsOn(id: string) {
+    return function (target: Function, context: ClassFieldDecoratorContext) {
+        context.addInitializer(() => {
+            
+        });
     }
 }
