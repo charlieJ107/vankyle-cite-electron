@@ -12,3 +12,4 @@ export interface IAppService {
     DropService: DropService;
     [key: string]: IService;
 }
+

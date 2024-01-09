@@ -1,5 +1,5 @@
 import { MessageEvent, MessagePortMain } from "electron";
-import { IControlMessage, IIpcMessage, IRpcMessage, IServiceInfo, REGISTER_SERVICE, isControlMessage, isIpcMessage, isRpcMessage } from "./IMessage";
+import { IIpcMessage, IRpcMessage, IServiceInfo, REGISTER_SERVICE, isIpcMessage, isRpcMessage } from "./IMessage";
 
 
 /**
@@ -78,8 +78,8 @@ export class MessagePortServiceManager {
     private onServiceProviderMessage(fromProvider: string, event: globalThis.MessageEvent | Electron.MessageEvent): void {
         if (isRpcMessage(event.data)) {
             this.handleRpcMessage(fromProvider, event.data as IRpcMessage);
-        } else if (isControlMessage(event.data)) {
-            this.handleControleMessage(fromProvider, event.data as IControlMessage);
+        } else if (isIpcMessage(event.data)) {
+            this.handleIpcMessage(fromProvider, event.data as IIpcMessage);
         } else {
             console.warn("Invalid message received: ", event.data);
             return;
@@ -92,9 +92,9 @@ export class MessagePortServiceManager {
      * @param message IPC消息
      * @returns void
      */
-    private handleControleMessage(providerId: string, message: IControlMessage) {
+    private handleIpcMessage(providerId: string, message: IIpcMessage) {
         console.log("Handling IPC message from provider: ", providerId, "message id: ", message.id);
-        switch (message.command) {
+        switch (message.channel) {
             case REGISTER_SERVICE:
                 const serviceInfo = message.payload as IServiceInfo;
                 if (serviceInfo.providerId !== providerId) {
@@ -224,10 +224,10 @@ export class MessagePortServiceManager {
             if (provider === serviceInfo.providerId) {
                 continue;
             }
-            const message: IControlMessage = {
+            const message: IIpcMessage = {
                 id: Date.now() + Math.floor(Math.random() * 10),
-                type: "CONTROL",
-                command: REGISTER_SERVICE,
+                type: "IPC",
+                channel: REGISTER_SERVICE,
                 payload: serviceInfo
             };
             console.log("Sending service registration message to provider: ", provider, "message: ", message);
