@@ -1,16 +1,14 @@
-import { IService } from "../IService";
-
-export class DropService implements IService {
+export class DropService {
     private dropHandlers: Map<string, (data: any) => any>;
     constructor() {
         this.dropHandlers = new Map<string, (data: any) => any>();
     }
 
-    registerDropHandler = (name: string, handler: (data: any) => any) => {
+    registerDropHandler<T>(name: string, handler: (data: T) => T): void {
         this.dropHandlers.set(name, handler);
     }
 
-    handleDrop = (data: any) => {
+    handleDrop<T>(data: T): T {
         for (const handler of this.dropHandlers.values()) {
             data = handler(data);
         }

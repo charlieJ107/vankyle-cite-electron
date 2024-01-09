@@ -1,15 +1,9 @@
-import { DropService } from "./DropService/DropService";
-import { PaperService } from "./PaperService/PaperService";
+import { MessagePortRpcAgent } from "@/common/rpc/MessagePortServiceAgent";
 
-export interface IService {
-    [key: string]: any;
+export function Service() {
+    return function (value: new (...args: any[]) => any, context: ClassDecoratorContext) {
+        const methods = Object.getOwnPropertyNames(value.prototype).filter((name) => name !== "constructor" && typeof value.prototype[name] === "function");
 
+        
+    }
 }
-
-
-export interface IAppService {
-    PaperService: PaperService;
-    DropService: DropService;
-    [key: string]: IService;
-}
-
