@@ -6,12 +6,13 @@ export class MessagePortRpcAgent {
     private pendingCalls: Map<number, { resolve: (value: any) => void, reject: (reason: any) => void }>;
     private postIpcMessage: (message: IIpcMessage, transfer?: MessagePortMain[] | MessagePort[]) => void;
     private agentId: string;
-
+    private methods: Map<string, any> = new Map();
     constructor(postIpcMessage: (message: IIpcMessage, transfer: MessagePortMain[] | MessagePort[]) => void) {
         this.managerPort = null;
         this.postIpcMessage = postIpcMessage;
         this.agentId = `${process.type}-${process.pid}`;
         this.pendingCalls = new Map();
+        
         // Register self as a service provider to ServiceManager
         const registerServiceProviderMessage: IIpcMessage = {
             id: Date.now() + Math.floor(Math.random() * 10),
@@ -55,7 +56,7 @@ export class MessagePortRpcAgent {
         } else if (isControlMessage(event.data)) {
             switch (event.data.command) {
                 case "REGISTER":
-                    // TODO
+                    this.onRegister(event.data);
                     break;
                 default:
                     console.warn("Invalid Control message command: ", event.data);
@@ -80,23 +81,24 @@ export class MessagePortRpcAgent {
         this.pendingCalls.delete(id);
     }
     private onRegister(message: IControlMessage) {
-
+        this.methods.set(message.payload, (...args: any[]) => this.call(message.payload, ...args));
     }
     private onRpcRequest(message: IRpcMessage) {
-        const func = this.resolve(message.method);
+        const { id, method, agent: payload } = message;
+        const func = this.resolve(method);
         if (!func) {
             console.warn("Service not found: ", message);
             return;
         }
-        const { id, payload } = message;
+
         try {
             const result = func(...payload);
             const response: IRpcMessage = {
                 id,
                 type: "RPC",
                 direction: "RESPONSE",
-                service: this.agentId,
-                method: message.method,
+                agent: this.agentId,
+                method: method,
                 payload: result,
             };
             this.managerPort.postMessage(response);
@@ -105,15 +107,15 @@ export class MessagePortRpcAgent {
                 id,
                 type: "RPC",
                 direction: "RESPONSE",
-                service: this.agentId,
-                method: message.method,
+                agent: this.agentId,
+                method: method,
                 payload: error,
             };
             this.managerPort.postMessage(response);
         }
     }
 
-    private call(name: string, ...args: any[]) {
+    private call(name: string, ...args: any[]): Promise<any> {
         if (!this.managerPort) {
             throw new Error("ServiceManager port not initialized");
         }
@@ -122,22 +124,23 @@ export class MessagePortRpcAgent {
             id,
             type: "RPC",
             direction: "REQUEST",
-            service: this.agentId,
+            agent: this.agentId,
             method: name,
             payload: args,
         };
         const promise = new Promise((resolve, reject) => {
             this.pendingCalls.set(id, { resolve, reject });
+            this.managerPort.postMessage(message);
         });
+        return promise;
     }
 
-    private services: Map<string, any> = new Map();
     public register(name: string, func: (...args: any[]) => any) {
-        this.services.set(name, func);
+        this.methods.set(name, func);
     }
 
     public resolve<T extends (...args: any[]) => any>(name: string): T {
-        const func = this.services.get(name);
+        const func = this.methods.get(name);
         if (!func) {
             throw new Error(`Service ${name} not found`);
         }

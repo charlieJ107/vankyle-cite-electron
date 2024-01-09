@@ -19,7 +19,7 @@ export function isIpcMessage(message: any): message is IIpcMessage {
 export interface IRpcMessage extends IMessage {
     type: "RPC";
     direction: "REQUEST" | "RESPONSE";
-    service: string;
+    agent: string;
     method: string;
 }
 export function isRpcMessage(message: any): message is IRpcMessage {
