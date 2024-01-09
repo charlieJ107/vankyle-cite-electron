@@ -12,19 +12,3 @@ export interface IAppService {
     DropService: DropService;
     [key: string]: IService;
 }
-
-export function ServiceDependency(id: string) {
-    return function (target: Function, context: ClassDecoratorContext) {
-        context.addInitializer(() => {
-            
-        });
-    }
-}
-
-export function DependsOn(id: string) {
-    return function (target: Function, context: ClassFieldDecoratorContext) {
-        context.addInitializer(() => {
-            
-        });
-    }
-}

@@ -6,6 +6,9 @@ import { DropService } from "./DropService/DropService";
 import { MessagePortServiceManager } from "@/common/rpc/MessagePortServiceManager";
 import { MessagePortServiceProvider } from "@/common/rpc/MessagePortServiceProvider";
 import { REGISTER_SERVICE_PROVIDER } from "@/common/rpc/IMessage";
+import { JsonFileDatabase } from "@/data/database/local/JsonFileDatabase";
+import { Paper } from "@/models/paper";
+import path from "path";
 
 const ServiceManager = new MessagePortServiceManager();
 const ServiceProvider = new MessagePortServiceProvider((message, transfer) => {
@@ -16,6 +19,9 @@ const ServiceProvider = new MessagePortServiceProvider((message, transfer) => {
         console.warn("Invalid Service provider message channel: ", message);
     }
 });
-ServiceProvider.registerService("PaperService", PaperService);
-ServiceProvider.registerService("DropService", DropService);
+
+const paperDatabase = new JsonFileDatabase<Paper>(path.join(__dirname, "data.json"));
+
+ServiceProvider.registerService("PaperService", new PaperService(paperDatabase));
+ServiceProvider.registerService("DropService", new DropService());
 

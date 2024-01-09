@@ -3,8 +3,11 @@ import { IService } from "../IService";
 import { IDatabase } from "@/data/database/IDatabase";
 
 export class PaperService implements IService {
-    constructor(private paperDatabase: IDatabase<Paper>) { }
+    private database: IDatabase<Paper>;
+    constructor(databse: IDatabase<Paper>) {
+        this.database = databse;
+    }
     getAllPapers = (paging?: { page: number, pageSize: number, total: number }): Promise<Paper[]> => {
-        return this.paperDatabase.getList();
+        return this.database.getList();
     }
 }

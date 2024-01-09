@@ -60,7 +60,7 @@ export function isIpcMessage(message: any): message is IIpcMessage {
 }
 
 export function isControlMessage(message: any): message is IControlMessage {
-    return message.id && message.type === "IPC" && message.command && message.payload;
+    return message.id && message.type === "CONTROL" && message.command && message.payload;
 }
 
 export const REGISTER_SERVICE_PROVIDER = "REGISTER_SERVICE_PROVIDER";

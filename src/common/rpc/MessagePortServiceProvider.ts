@@ -52,6 +52,7 @@ export class MessagePortServiceProvider implements IServiceProvider {
                 break;
         }
     }
+
     public AppServices(): IAppService {
         const services = {} as IAppService;
         for (const [key, value] of this.serviceInstances) {
@@ -59,6 +60,7 @@ export class MessagePortServiceProvider implements IServiceProvider {
         }
         return services;
     }
+    
     private async onManagerMessage(event: MessageEvent | Electron.MessageEvent) {
         if (isRpcMessage(event.data)) {
             switch (event.data.direction) {
@@ -264,36 +266,13 @@ export class MessagePortServiceProvider implements IServiceProvider {
         this.managerPort.postMessage(responseMessage);
     }
 
-
-    private resolve<T extends IService>(target: new (...args: (IService | undefined)[]) => T): T {
-        // Resolve dependencies from decorator
-        
-
-
-        if (paramNames === null) {
-            return new target();
-        }
-
-        const dependencies = paramNames.map((name: string) => {
-            const dependency = this.dependencies.get(name);
-            if (!dependency) {
-                throw new Error(`Dependency '${name}' not found.`);
-            }
-            return dependency;
-        });
-
-        return new target(...dependencies);
-    }
-
-    public registerService(name: string, service: new (...args: (IService | undefined)[]) => IService) {
-
-        const instance = this.resolve(service);
+    public registerService(name: string, service: IService) {
         const serviceInfo: IServiceInfo = {
             service: name,
             providerId: this.providerId,
-            methods: this.getServiceInstanceMethodList(instance),
+            methods: this.getInstanceMethodList(service),
         };
-        this.serviceInstances.set(name, instance);
+        this.serviceInstances.set(name, service);
         const registerServiceMessage: IControlMessage = {
             id: Date.now() + Math.floor(Math.random() * 10),
             type: "CONTROL",
@@ -303,7 +282,23 @@ export class MessagePortServiceProvider implements IServiceProvider {
         this.managerPort.postMessage(registerServiceMessage);
     }
 
-    private getServiceInstanceMethodList(instance: IService): string[] {
+    public registerDependency(name: string, dependency: any) {
+        const dependencyInfo: IDependencyInfo = {
+            dependency: name,
+            providerId: this.providerId,
+            methods: this.getInstanceMethodList(dependency),
+        };
+        this.dependencies.set(name, dependency);
+        const registerDependencyMessage: IControlMessage = {
+            id: Date.now() + Math.floor(Math.random() * 10),
+            type: "CONTROL",
+            command: "REGISTER_DEPENDENCY",
+            payload: dependencyInfo
+        };
+        this.managerPort.postMessage(registerDependencyMessage);
+    }
+
+    private getInstanceMethodList(instance: IService): string[] {
         const methods = Object.getOwnPropertyNames(
             Object.getPrototypeOf(instance)
         ).filter(method => method !== "constructor");
@@ -319,9 +314,7 @@ export class MessagePortServiceProvider implements IServiceProvider {
 
     private registerServiceInfo(serviceInfo: IServiceInfo) {
         console.log("Register remote service: ", serviceInfo)
-        const proxiedService: IService = {
-
-        }
+        const proxiedService: IService = {};
         for (const method of serviceInfo.methods) {
             proxiedService[method] = (...args: any[]) => {
                 return this.callService(serviceInfo.service, method, ...args);
