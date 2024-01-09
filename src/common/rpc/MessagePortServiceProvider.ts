@@ -1,5 +1,5 @@
 import { MessageChannelMain, MessagePortMain } from "electron";
-import { IMessage, IServiceInfo, REGISTER_SERVICE_PROVIDER, isIpcMessage, isMessage, isRpcMessage } from "./../rpc/IMessage";
+import { IControlMessage, IMessage, IServiceInfo, REGISTER_SERVICE_PROVIDER, isControlMessage, isIpcMessage, isMessage, isRpcMessage } from "./../rpc/IMessage";
 import { IAppService, IService } from "@/services/IService";
 import { IIpcMessage, IRpcMessage } from "./IMessage";
 import { IServiceProvider } from "./IServiceProvider";
@@ -16,7 +16,6 @@ export class MessagePortServiceProvider implements IServiceProvider {
     private postIpcMessage: (message: IIpcMessage, transfer?: MessagePortMain[] | MessagePort[]) => void;
     private providerId: string;
     private serviceInstances: Map<string, IService>;
-    private dependencies: Map<string, IService>;
 
     constructor(postIpcMessage: (message: IIpcMessage, transfer: MessagePortMain[] | MessagePort[]) => void) {
         this.managerPort = null;
@@ -60,7 +59,7 @@ export class MessagePortServiceProvider implements IServiceProvider {
         }
         return services;
     }
-    
+
     private async onManagerMessage(event: MessageEvent | Electron.MessageEvent) {
         if (isRpcMessage(event.data)) {
             switch (event.data.direction) {
@@ -74,8 +73,8 @@ export class MessagePortServiceProvider implements IServiceProvider {
                     console.warn("Invalid message direction: ", event.data.direction);
                     break;
             }
-        } else if (isIpcMessage(event.data)) {
-            this.handleIpcMessage(event.data);
+        } else if (isControlMessage(event.data)) {
+            this.handleControlMessage(event.data);
         }
     }
 
@@ -114,7 +113,7 @@ export class MessagePortServiceProvider implements IServiceProvider {
         });
     }
 
-    private handleIpcMessage(message: IIpcMessage) {
+    private handleControlMessage(message: IControlMessage) {
         switch (message.channel) {
             case "REGISTER_SERVICE":
                 const serviceInfo = message.payload as IServiceInfo;
@@ -125,7 +124,7 @@ export class MessagePortServiceProvider implements IServiceProvider {
                 this.registerServiceInfo(serviceInfo);
                 break;
             default:
-                console.warn("Invalid IPC message channel: ", message.channel);
+                console.warn("Invalid Control message channel: ", message.channel);
                 break;
         }
     }
@@ -184,7 +183,7 @@ export class MessagePortServiceProvider implements IServiceProvider {
         }
 
         const dependencies = paramNames.map((name: string) => {
-            const dependency = this.dependencies.get(name);
+            const dependency = this.serviceInstances.get(name);
             if (!dependency) {
                 throw new Error(`Dependency '${name}' not found.`);
             }
@@ -194,38 +193,20 @@ export class MessagePortServiceProvider implements IServiceProvider {
         return new target(...dependencies);
     }
 
-    public registerService(name: string, service: new (...args: (IService | undefined)[]) => IService) {
-
-        const instance = this.resolve(service);
+    public registerService(name: string, service: IService) {
         const serviceInfo: IServiceInfo = {
             service: name,
             providerId: this.providerId,
             methods: this.getInstanceMethodList(service),
         };
-        this.serviceInstances.set(name, instance);
-        const registerServiceMessage: IIpcMessage = {
+        this.serviceInstances.set(name, service);
+        const registerServiceMessage: IControlMessage = {
             id: Date.now() + Math.floor(Math.random() * 10),
-            type: "IPC",
+            type: "CONTROL",
             channel: "REGISTER_SERVICE",
             payload: serviceInfo
         };
         this.managerPort.postMessage(registerServiceMessage);
-    }
-
-    public registerDependency(name: string, dependency: any) {
-        const dependencyInfo: IDependencyInfo = {
-            dependency: name,
-            providerId: this.providerId,
-            methods: this.getInstanceMethodList(dependency),
-        };
-        this.dependencies.set(name, dependency);
-        const registerDependencyMessage: IControlMessage = {
-            id: Date.now() + Math.floor(Math.random() * 10),
-            type: "CONTROL",
-            command: "REGISTER_DEPENDENCY",
-            payload: dependencyInfo
-        };
-        this.managerPort.postMessage(registerDependencyMessage);
     }
 
     private getInstanceMethodList(instance: IService): string[] {

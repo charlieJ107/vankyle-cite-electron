@@ -1,5 +1,5 @@
 import { MessageEvent, MessagePortMain } from "electron";
-import { IIpcMessage, IRpcMessage, IServiceInfo, REGISTER_SERVICE, isIpcMessage, isRpcMessage } from "./IMessage";
+import { IControlMessage, IIpcMessage, IRpcMessage, IServiceInfo, REGISTER_SERVICE, isControlMessage, isIpcMessage, isRpcMessage } from "./IMessage";
 
 
 /**
@@ -78,8 +78,8 @@ export class MessagePortServiceManager {
     private onServiceProviderMessage(fromProvider: string, event: globalThis.MessageEvent | Electron.MessageEvent): void {
         if (isRpcMessage(event.data)) {
             this.handleRpcMessage(fromProvider, event.data as IRpcMessage);
-        } else if (isIpcMessage(event.data)) {
-            this.handleIpcMessage(fromProvider, event.data as IIpcMessage);
+        } else if (isControlMessage(event.data)) {
+            this.handleControlMessage(fromProvider, event.data as IControlMessage);
         } else {
             console.warn("Invalid message received: ", event.data);
             return;
@@ -87,13 +87,13 @@ export class MessagePortServiceManager {
     }
 
     /**
-     * 处理来自Provider Port的IPC消息，来自Main Process的IPC消息已经在onParentPortMessage中处理过了
+     * 处理来自Provider Port的Controll消息
      * @param providerId 这个IPC消息来自哪个Provider
      * @param message IPC消息
      * @returns void
      */
-    private handleIpcMessage(providerId: string, message: IIpcMessage) {
-        console.log("Handling IPC message from provider: ", providerId, "message id: ", message.id);
+    private handleControlMessage(providerId: string, message: IControlMessage) {
+        console.log("Handling Control message from provider: ", providerId, "message id: ", message.id);
         switch (message.channel) {
             case REGISTER_SERVICE:
                 const serviceInfo = message.payload as IServiceInfo;
@@ -105,7 +105,7 @@ export class MessagePortServiceManager {
                 this.registerService(serviceInfo);
                 break;
             default:
-                console.warn("Invalid IPC message channel: ", message);
+                console.warn("Invalid Control message channel: ", message);
                 break;
         }
 
@@ -224,9 +224,9 @@ export class MessagePortServiceManager {
             if (provider === serviceInfo.providerId) {
                 continue;
             }
-            const message: IIpcMessage = {
+            const message: IControlMessage = {
                 id: Date.now() + Math.floor(Math.random() * 10),
-                type: "IPC",
+                type: "CONTROL",
                 channel: REGISTER_SERVICE,
                 payload: serviceInfo
             };
