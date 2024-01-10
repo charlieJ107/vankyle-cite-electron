@@ -1,13 +1,14 @@
 import { MessagePortMain, MessageEvent } from "electron";
-import { IControlMessage, IIpcMessage, IMessage, IRpcMessage, REGISTER, REGISTER_AGENT, isControlMessage, isIpcMessage, isRpcMessage } from "./IMessages";
+import { IControlMessage, IIpcMessage, IMessage, IPublishMessage, IRpcMessage, REGISTER, REGISTER_AGENT, isControlMessage, isIpcMessage, isPublishMessage, isRpcMessage } from "./IMessages";
 import { IRpcManager } from "./IRpcManager";
 
-export class MessagePortRpcManager implements IRpcManager{
-    private providers: Map<string, MessagePort | MessagePortMain>;
+export class MessagePortRpcManager implements IRpcManager {
+    private agents: Map<string, MessagePort | MessagePortMain>;
     private pendingCalls: Map<number, { resolve: (result: any) => void; reject: (reason: any) => void }>;
-    private methods: Map<string, any> = new Map();
+    private methods: Map<string, string> = new Map();
+    private subscriptions: Map<string, string[]> = new Map();
     constructor() {
-        this.providers = new Map();
+        this.agents = new Map();
         this.pendingCalls = new Map();
         process.parentPort.on("message", (event) => this.onParentPortMessage(event));
     }
@@ -33,7 +34,7 @@ export class MessagePortRpcManager implements IRpcManager{
         }
     }
     public registerAgent(agentId: string, port: MessagePortMain | MessagePort) {
-        if (this.providers.has(agentId)) {
+        if (this.agents.has(agentId)) {
             console.warn(`Agent ${agentId} already registered, overwriting...`);
             // We should overwrite the existing one, as the new service provider created a new MessagePort for communication
         }
@@ -43,7 +44,7 @@ export class MessagePortRpcManager implements IRpcManager{
             port.on("message", (event) => this.onAgentMessage(agentId, event as Electron.MessageEvent));
         }
 
-        this.providers.set(agentId, port);
+        this.agents.set(agentId, port);
         port.start();
         for (const [method, provider] of this.methods.entries()) {
             const controlMessage: IControlMessage = {
@@ -76,17 +77,21 @@ export class MessagePortRpcManager implements IRpcManager{
             switch (message.command) {
                 case "REGISTER":
                     this.methods.set(message.payload, providerId);
-                    for (const [id, port] of this.providers.entries()) {
+                    for (const [id, port] of this.agents.entries()) {
                         if (id === providerId) {
                             continue;
                         }
                         port.postMessage(message);
                     }
+                case "SUBSCRIBE":
+                    this.onSubsrcibe(providerId, message);
                     break;
                 default:
                     console.warn("Invalid Control message command: ", event.data);
                     break;
             }
+        } else if (isPublishMessage(event.data)) {
+            this.onPublish(event.data);
         } else {
             console.warn("Invalid message received, expected RPC or Control message: ", event.data);
         }
@@ -99,7 +104,7 @@ export class MessagePortRpcManager implements IRpcManager{
             console.warn("Method not found: ", message);
             return;
         }
-        const providerPort = this.providers.get(provider) as MessagePort | MessagePortMain;
+        const providerPort = this.agents.get(provider) as MessagePort | MessagePortMain;
         const result = await new Promise((resolve, reject) => {
             this.pendingCalls.set(id, { resolve, reject });
             providerPort.postMessage(message);
@@ -111,7 +116,7 @@ export class MessagePortRpcManager implements IRpcManager{
             method,
             payload: result
         };
-        const requesterPort = this.providers.get(requester) as MessagePort | MessagePortMain;
+        const requesterPort = this.agents.get(requester) as MessagePort | MessagePortMain;
         requesterPort.postMessage(response);
     }
     private onRpcResponse(message: IMessage) {
@@ -127,5 +132,24 @@ export class MessagePortRpcManager implements IRpcManager{
             resolve(payload);
         }
         this.pendingCalls.delete(id);
+    }
+
+    private onPublish(message: IPublishMessage) {
+        const { channel } = message;
+        console.log("Publish message: ", message);
+        const subscribers = this.subscriptions.get(channel);
+        for (const subscriber of subscribers) {
+            const subscriberPort = this.agents.get(subscriber) as MessagePort | MessagePortMain;
+            subscriberPort.postMessage(message);
+        }
+    }
+
+    private onSubsrcibe(provider: string, message: IControlMessage) {
+        const { payload } = message;
+        if (!this.subscriptions.has(payload)) {
+            this.subscriptions.set(payload, []);
+        }
+        const subscribers = this.subscriptions.get(payload) as string[];
+        subscribers.push(provider);
     }
 }

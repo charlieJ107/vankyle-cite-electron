@@ -1,5 +1,5 @@
 import { MessageChannelMain, MessagePortMain } from "electron";
-import { IControlMessage, IIpcMessage, IMessage, IRpcMessage, REGISTER, REGISTER_AGENT, isControlMessage, isRpcMessage } from "./IMessages";
+import { IControlMessage, IIpcMessage, IMessage, IPublishMessage, IRpcMessage, REGISTER, REGISTER_AGENT, isControlMessage, isPublishMessage, isRpcMessage } from "./IMessages";
 import { IRpcAgent } from "./IRpcAgent";
 
 export class MessagePortRpcAgent implements IRpcAgent {
@@ -8,6 +8,7 @@ export class MessagePortRpcAgent implements IRpcAgent {
     private postIpcMessage: (message: IIpcMessage, transfer?: MessagePortMain[] | MessagePort[]) => void;
     private agentId: string;
     private methods: Map<string, any> = new Map();
+    private subscriptions: Map<string, Function[]> = new Map();
     constructor(postIpcMessage: (message: IIpcMessage, transfer: MessagePortMain[] | MessagePort[]) => void) {
         this.managerPort = null;
         this.postIpcMessage = postIpcMessage;
@@ -65,8 +66,21 @@ export class MessagePortRpcAgent implements IRpcAgent {
                     console.warn("Invalid Control message command: ", message);
                     break;
             }
+        } else if (isPublishMessage(event.data)){
+            this.onPublish(event.data);
         } else {
             console.warn("Invalid message received, expected RPC or Control message: ", event.data);
+        }
+    }
+    private onPublish(data: IPublishMessage) {
+        const { channel, payload } = data;
+        const subscribers = this.subscriptions.get(channel);
+        if (!subscribers) {
+            console.warn("No subscribers for channel: ", channel);
+            return;
+        }
+        for (const subscriber of subscribers) {
+            subscriber(payload);
         }
     }
     private onResponse(message: IMessage) {
@@ -159,5 +173,30 @@ export class MessagePortRpcAgent implements IRpcAgent {
             throw new Error(`Method ${name} not found`);
         }
         return func;
+    }
+
+    public publish(name: string, info: any) {
+        const message: IPublishMessage = {
+            id: Date.now() + Math.floor(Math.random() * 10),
+            type: "PUBLISH",
+            channel: name,
+            payload: info,
+        };
+        this.managerPort.postMessage(message);
+    }
+    public subscribe(name: string, func: (...args: any[]) => any) {
+        if (!this.subscriptions.has(name)) {
+            this.subscriptions.set(name, []);
+        }
+        const subscribers = this.subscriptions.get(name) as Function[];
+        subscribers.push(func);
+
+        const message: IControlMessage = {
+            id: Date.now() + Math.floor(Math.random() * 10),
+            type: "CONTROL",
+            command: "SUBSCRIBE",
+            payload: name
+        };
+        this.managerPort.postMessage(message);
     }
 }

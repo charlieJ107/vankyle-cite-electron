@@ -20,7 +20,7 @@ const PaperDispatchContext = createContext<React.Dispatch<PaperContextAction>>((
 export function PaperContextProvider({ children }: { children: JSX.Element | JSX.Element[] }) {
     const [papers, dispatch] = useReducer(paperContextReducer, InitialPaperContext);
     useEffect(() => {
-        window.AppServices.PaperService.getAllPapers().then(papers => {
+        window.App.Services.PaperService.getAllPapers().then(papers => {
             dispatch({ type: "LOAD_PAPERS", papers });
         });
     }, []);

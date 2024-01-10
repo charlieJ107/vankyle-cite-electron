@@ -6,8 +6,9 @@ import { REGISTER_AGENT } from "@/common/rpc/IMessages";
 import { MessagePortRpcManager } from "@/common/rpc/MessagePortRpcManager";
 import { MessagePortRpcAgent } from "@/common/rpc/MessagePortRpcAgent";
 import { PaperService } from "./PaperService/PaperService";
+import { ServiceProvider } from "./ServiceProvider";
 import { JsonFileDatabase } from "@/data/database/local/JsonFileDatabase";
-import path from "path";
+import { Paper } from "@/models/paper";
 
 const RpcManager = new MessagePortRpcManager();
 
@@ -20,6 +21,6 @@ const ServiceAgent = new MessagePortRpcAgent((message, transfer) => {
     }
 });
 
-const paperService = new PaperService(new JsonFileDatabase(path.join(__dirname, "data", "paper.json")));
-
-ServiceAgent.register("getAllPapers", () => paperService.getAllPapers()); 
+const serviceProvider = new ServiceProvider(ServiceAgent);
+const paperService = new PaperService(new JsonFileDatabase<Paper>());
+serviceProvider.registerService("PaperService", paperService);

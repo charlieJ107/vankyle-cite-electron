@@ -4,17 +4,18 @@
 import { contextBridge, ipcRenderer } from "electron";
 import { MessagePortRpcAgent } from "@/common/rpc/MessagePortRpcAgent";
 import { REGISTER_AGENT } from "./common/rpc/IMessages";
+import { ServiceProvider } from "./services/ServiceProvider";
 
 const appServiceAgent = new MessagePortRpcAgent((message, transfer) => {
     ipcRenderer.postMessage(REGISTER_AGENT, message, transfer as MessagePort[]);
 });
-const appService = {
-    PaperService: {
-        getAllPapers: async () => {
-            const func = await appServiceAgent.resolve("getAllPapers");
-            return await func();
-        }
+
+const serviceProvider = new ServiceProvider(appServiceAgent);
+console.log(serviceProvider.getAppServices());
+contextBridge.exposeInMainWorld("App", {
+    get Services() {
+        const services = serviceProvider.getAppServices();
+        console.log("getting services: ", services);
+        return services;
     }
-};
-// TODO: Add proxied service
-contextBridge.exposeInMainWorld("AppServices", appService)
+});
