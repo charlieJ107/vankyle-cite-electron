@@ -1,7 +1,8 @@
 import { MessageChannelMain, MessagePortMain } from "electron";
 import { IControlMessage, IIpcMessage, IMessage, IRpcMessage, REGISTER, REGISTER_AGENT, isControlMessage, isRpcMessage } from "./IMessages";
+import { IRpcAgent } from "./IRpcAgent";
 
-export class MessagePortRpcAgent {
+export class MessagePortRpcAgent implements IRpcAgent {
     private managerPort: MessagePort | MessagePortMain | null; // MessagePort to ServiceManager
     private pendingCalls: Map<number, { resolve: (value: any) => void, reject: (reason: any) => void }>;
     private postIpcMessage: (message: IIpcMessage, transfer?: MessagePortMain[] | MessagePort[]) => void;

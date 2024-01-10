@@ -1,7 +1,8 @@
 import { MessagePortMain, MessageEvent } from "electron";
 import { IControlMessage, IIpcMessage, IMessage, IRpcMessage, REGISTER, REGISTER_AGENT, isControlMessage, isIpcMessage, isRpcMessage } from "./IMessages";
+import { IRpcManager } from "./IRpcManager";
 
-export class MessagePortRpcManager {
+export class MessagePortRpcManager implements IRpcManager{
     private providers: Map<string, MessagePort | MessagePortMain>;
     private pendingCalls: Map<number, { resolve: (result: any) => void; reject: (reason: any) => void }>;
     private methods: Map<string, any> = new Map();
