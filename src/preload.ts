@@ -11,11 +11,11 @@ const appServiceAgent = new MessagePortRpcAgent((message, transfer) => {
 });
 
 const serviceProvider = new ServiceProvider(appServiceAgent);
-console.log(serviceProvider.getAppServices());
-contextBridge.exposeInMainWorld("App", {
-    get Services() {
-        const services = serviceProvider.getAppServices();
-        console.log("getting services: ", services);
-        return services;
-    }
+serviceProvider.whenServiceReady().then(() => {
+    contextBridge.exposeInMainWorld("App", {
+        get Services() {
+            const services = serviceProvider.getAppServices();
+            return services;
+        }
+    });
 });

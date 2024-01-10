@@ -24,3 +24,4 @@ const ServiceAgent = new MessagePortRpcAgent((message, transfer) => {
 const serviceProvider = new ServiceProvider(ServiceAgent);
 const paperService = new PaperService(new JsonFileDatabase<Paper>());
 serviceProvider.registerService("PaperService", paperService);
+serviceProvider.ready();

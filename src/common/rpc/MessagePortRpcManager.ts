@@ -91,7 +91,7 @@ export class MessagePortRpcManager implements IRpcManager {
                     break;
             }
         } else if (isPublishMessage(event.data)) {
-            this.onPublish(event.data);
+            this.onPublish(providerId, event.data);
         } else {
             console.warn("Invalid message received, expected RPC or Control message: ", event.data);
         }
@@ -134,11 +134,13 @@ export class MessagePortRpcManager implements IRpcManager {
         this.pendingCalls.delete(id);
     }
 
-    private onPublish(message: IPublishMessage) {
+    private onPublish(provider: string, message: IPublishMessage) {
         const { channel } = message;
-        console.log("Publish message: ", message);
         const subscribers = this.subscriptions.get(channel);
         for (const subscriber of subscribers) {
+            if (subscriber === provider) {
+                continue;
+            }
             const subscriberPort = this.agents.get(subscriber) as MessagePort | MessagePortMain;
             subscriberPort.postMessage(message);
         }
@@ -151,5 +153,6 @@ export class MessagePortRpcManager implements IRpcManager {
         }
         const subscribers = this.subscriptions.get(payload) as string[];
         subscribers.push(provider);
+        this.subscriptions.set(payload, subscribers);
     }
 }

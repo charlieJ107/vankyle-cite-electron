@@ -102,7 +102,6 @@ export class MessagePortRpcAgent implements IRpcAgent {
             console.warn("Method already registered: ", message);
             return;
         }
-        console.log("Register method: ", message.payload);
         this.methods.set(message.payload, (...args: any[]) => this.call(message.payload, ...args));
     }
     private async onRpcRequest(message: IRpcMessage) {
