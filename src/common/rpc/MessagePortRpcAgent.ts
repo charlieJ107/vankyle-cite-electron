@@ -1,5 +1,5 @@
 import { MessageChannelMain, MessagePortMain } from "electron";
-import { IControlMessage, IIpcMessage, IMessage, IRpcMessage, REGISTER_AGENT, isControlMessage, isRpcMessage } from "./IMessages";
+import { IControlMessage, IIpcMessage, IMessage, IRpcMessage, REGISTER, REGISTER_AGENT, isControlMessage, isRpcMessage } from "./IMessages";
 
 export class MessagePortRpcAgent {
     private managerPort: MessagePort | MessagePortMain | null; // MessagePort to ServiceManager
@@ -12,7 +12,7 @@ export class MessagePortRpcAgent {
         this.postIpcMessage = postIpcMessage;
         this.agentId = `${process.type}-${process.pid}`;
         this.pendingCalls = new Map();
-        
+
         // Register self as a service provider to ServiceManager
         const registerServiceProviderMessage: IIpcMessage = {
             id: Date.now() + Math.floor(Math.random() * 10),
@@ -42,24 +42,26 @@ export class MessagePortRpcAgent {
     }
     private async onManagerMessage(event: MessageEvent | Electron.MessageEvent) {
         if (isRpcMessage(event.data)) {
-            switch (event.data.direction) {
+            const message = event.data as IRpcMessage;
+            switch (message.direction) {
                 case "REQUEST":
-                    this.onRpcRequest(event.data);
+                    this.onRpcRequest(message);
                     break;
                 case "RESPONSE":
-                    this.onResponse(event.data);
+                    this.onResponse(message);
                     break;
                 default:
-                    console.warn("Invalid RPC message direction: ", event.data);
+                    console.warn("Invalid RPC message direction: ", message);
                     break;
             }
         } else if (isControlMessage(event.data)) {
-            switch (event.data.command) {
+            const message = event.data as IControlMessage;
+            switch (message.command) {
                 case "REGISTER":
-                    this.onRegister(event.data);
+                    this.onRegister(message);
                     break;
                 default:
-                    console.warn("Invalid Control message command: ", event.data);
+                    console.warn("Invalid Control message command: ", message);
                     break;
             }
         } else {
@@ -83,8 +85,8 @@ export class MessagePortRpcAgent {
     private onRegister(message: IControlMessage) {
         this.methods.set(message.payload, (...args: any[]) => this.call(message.payload, ...args));
     }
-    private onRpcRequest(message: IRpcMessage) {
-        const { id, method, agent: payload } = message;
+    private async onRpcRequest(message: IRpcMessage) {
+        const { id, method, payload } = message;
         const func = this.resolve(method);
         if (!func) {
             console.warn("Service not found: ", message);
@@ -92,12 +94,11 @@ export class MessagePortRpcAgent {
         }
 
         try {
-            const result = func(...payload);
+            const result = await func(...payload);
             const response: IRpcMessage = {
                 id,
                 type: "RPC",
-                direction: "RESPONSE",
-                agent: this.agentId,
+                direction: "RESPONSE", 
                 method: method,
                 payload: result,
             };
@@ -107,7 +108,6 @@ export class MessagePortRpcAgent {
                 id,
                 type: "RPC",
                 direction: "RESPONSE",
-                agent: this.agentId,
                 method: method,
                 payload: error,
             };
@@ -124,7 +124,6 @@ export class MessagePortRpcAgent {
             id,
             type: "RPC",
             direction: "REQUEST",
-            agent: this.agentId,
             method: name,
             payload: args,
         };
@@ -137,6 +136,15 @@ export class MessagePortRpcAgent {
 
     public register(name: string, func: (...args: any[]) => any) {
         this.methods.set(name, func);
+        if (this.managerPort) {
+            const message: IControlMessage = {
+                id: Date.now() + Math.floor(Math.random() * 10),
+                type: "CONTROL",
+                command: REGISTER,
+                payload: name,
+            };
+            this.managerPort.postMessage(message);
+        }
     }
 
     public resolve<T extends (...args: any[]) => any>(name: string): T {

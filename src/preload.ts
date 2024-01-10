@@ -11,7 +11,8 @@ const appServiceAgent = new MessagePortRpcAgent((message, transfer) => {
 const appService = {
     PaperService: {
         getAllPapers: async () => {
-            return await appServiceAgent.resolve("getAllPapers");
+            const func = await appServiceAgent.resolve("getAllPapers");
+            return await func();
         }
     }
 };

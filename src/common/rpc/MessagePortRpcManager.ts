@@ -1,5 +1,5 @@
 import { MessagePortMain, MessageEvent } from "electron";
-import { IIpcMessage, REGISTER_AGENT, isControlMessage, isIpcMessage, isRpcMessage } from "./IMessages";
+import { IControlMessage, IIpcMessage, IMessage, IRpcMessage, REGISTER, REGISTER_AGENT, isControlMessage, isIpcMessage, isRpcMessage } from "./IMessages";
 
 export class MessagePortRpcManager {
     private providers: Map<string, MessagePort | MessagePortMain>;
@@ -44,7 +44,6 @@ export class MessagePortRpcManager {
 
         this.providers.set(agentId, port);
         port.start();
-        console.log("Agent registered: ", agentId);
     }
 
     private onAgentMessage(providerId: string, event: globalThis.MessageEvent | Electron.MessageEvent): void {
@@ -62,9 +61,16 @@ export class MessagePortRpcManager {
                     break;
             }
         } else if (isControlMessage(event.data)) {
-            switch (event.data.command) {
+            const message = event.data as IControlMessage;
+            switch (message.command) {
                 case "REGISTER":
-                    this.methods.set(providerId, event.data.payload);
+                    this.methods.set(message.payload, providerId);
+                    for (const [id, port] of this.providers.entries()) {
+                        if (id === providerId) {
+                            continue;
+                        }
+                        port.postMessage(message);
+                    }
                     break;
                 default:
                     console.warn("Invalid Control message command: ", event.data);
@@ -75,34 +81,29 @@ export class MessagePortRpcManager {
         }
     }
 
-    private async onRpcRequest(requester: string, message: any) {
-        const { id, service, method, payload } = message;
-        if (!this.providers.has(requester)) {
-            console.warn("Service provider not found for request message: ", message);
-            return;
-        }
+    private async onRpcRequest(requester: string, message: IRpcMessage) {
+        const { id, method } = message;
         const provider = this.methods.get(method);
         if (!provider) {
-            console.warn("Service not found: ", message);
+            console.warn("Method not found: ", message);
             return;
         }
         const providerPort = this.providers.get(provider) as MessagePort | MessagePortMain;
-        const result = await  new Promise((resolve, reject) => {
+        const result = await new Promise((resolve, reject) => {
             this.pendingCalls.set(id, { resolve, reject });
             providerPort.postMessage(message);
         });
-        const response = {
+        const response: IRpcMessage = {
             id,
             type: "RPC",
             direction: "RESPONSE",
-            service,
             method,
             payload: result
         };
         const requesterPort = this.providers.get(requester) as MessagePort | MessagePortMain;
         requesterPort.postMessage(response);
     }
-    private onRpcResponse(message: any) {
+    private onRpcResponse(message: IMessage) {
         const { id, payload } = message;
         if (!this.pendingCalls.has(id)) {
             console.warn("Pending call not found for response message: ", message);

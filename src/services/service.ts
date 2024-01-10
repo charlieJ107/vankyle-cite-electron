@@ -17,6 +17,4 @@ const ServiceAgent = new MessagePortRpcAgent((message, transfer) => {
     }
 });
 
-ServiceAgent.register("getAllPapers", async () => {
-    return Promise.resolve([]);
-});
+ServiceAgent.register("getAllPapers", async () => Promise.resolve([]));
