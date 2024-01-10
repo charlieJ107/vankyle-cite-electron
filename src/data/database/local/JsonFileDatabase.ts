@@ -2,14 +2,18 @@ import { BaseDataModel } from "@models/DataModel";
 import { IDatabase } from "../IDatabase";
 import fs from "fs";
 import path from "path";
+import fsExtra from "fs-extra";
 
 export class JsonFileDatabase<T extends BaseDataModel> implements IDatabase<T> {
     private dataDir: string;
     constructor(dataDir: string = path.join(__dirname, "data.json")) {
         this.dataDir = dataDir;
-        if (!fs.existsSync(dataDir)) {
-            fs.writeFileSync(dataDir, "{}");
-        }
+        fsExtra.ensureDir(path.dirname(dataDir)).then(() => {
+            if (!fs.existsSync(dataDir)) {
+                fs.writeFileSync(dataDir, "{}");
+            }
+        });
+
     }
     private buffer: { [key: string]: T; } = {};
 

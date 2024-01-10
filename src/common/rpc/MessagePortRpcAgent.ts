@@ -83,13 +83,18 @@ export class MessagePortRpcAgent {
         this.pendingCalls.delete(id);
     }
     private onRegister(message: IControlMessage) {
+        if (this.methods.has(message.payload)) {
+            console.warn("Method already registered: ", message);
+            return;
+        }
+        console.log("Register method: ", message.payload);
         this.methods.set(message.payload, (...args: any[]) => this.call(message.payload, ...args));
     }
     private async onRpcRequest(message: IRpcMessage) {
         const { id, method, payload } = message;
         const func = this.resolve(method);
         if (!func) {
-            console.warn("Service not found: ", message);
+            console.warn("Method not found: ", message);
             return;
         }
 
@@ -98,7 +103,7 @@ export class MessagePortRpcAgent {
             const response: IRpcMessage = {
                 id,
                 type: "RPC",
-                direction: "RESPONSE", 
+                direction: "RESPONSE",
                 method: method,
                 payload: result,
             };
@@ -150,7 +155,7 @@ export class MessagePortRpcAgent {
     public resolve<T extends (...args: any[]) => any>(name: string): T {
         const func = this.methods.get(name);
         if (!func) {
-            throw new Error(`Service ${name} not found`);
+            throw new Error(`Method ${name} not found`);
         }
         return func;
     }

@@ -44,6 +44,16 @@ export class MessagePortRpcManager {
 
         this.providers.set(agentId, port);
         port.start();
+        for (const [method, provider] of this.methods.entries()) {
+            const controlMessage: IControlMessage = {
+                type: "CONTROL",
+                id: Date.now() + Math.floor(Math.random() * 10),
+                command: REGISTER,
+                payload: method
+            };
+            port.postMessage(controlMessage);
+
+        }
     }
 
     private onAgentMessage(providerId: string, event: globalThis.MessageEvent | Electron.MessageEvent): void {
