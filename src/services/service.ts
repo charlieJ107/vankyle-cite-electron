@@ -9,6 +9,7 @@ import { PaperService } from "./PaperService/PaperService";
 import { ServiceProvider } from "./ServiceProvider";
 import { JsonFileDatabase } from "@/data/database/local/JsonFileDatabase";
 import { Paper } from "@/models/paper";
+import { DropServiceServer } from "./DropService/DropService";
 
 const RpcManager = new MessagePortRpcManager();
 
@@ -23,5 +24,6 @@ const ServiceAgent = new MessagePortRpcAgent((message, transfer) => {
 
 const serviceProvider = new ServiceProvider(ServiceAgent);
 const paperService = new PaperService(new JsonFileDatabase<Paper>());
+const dropService = new DropServiceServer(ServiceAgent);
 serviceProvider.registerService("PaperService", paperService);
 serviceProvider.ready();

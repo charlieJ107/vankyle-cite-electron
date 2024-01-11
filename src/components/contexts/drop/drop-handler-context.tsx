@@ -9,8 +9,14 @@ export function DropHandlerContextProvider({ children }: { children: JSX.Element
         const dropHandler = async (event: DragEvent) => {
             event.preventDefault();
             if (event.dataTransfer) {
-                window.AppServices.DropService.handleDrop(event.dataTransfer.files);
-                window.AppServices.PaperService.getAllPapers().then(papers => {
+                const filePaths = event.dataTransfer.files;
+                const paths = []
+                for (let i = 0; i < filePaths.length; i++) {
+                    console.log(filePaths[i].path);
+                    paths.push(filePaths[i].path);
+                }
+                window.App.Services.DropService.handleDropEvent(paths);
+                window.App.Services.PaperService.getAllPapers().then(papers => {
                     dispatchPapers({ type: "LOAD_PAPERS", papers });
                 });
             }

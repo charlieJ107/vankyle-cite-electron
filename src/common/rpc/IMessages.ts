@@ -22,7 +22,7 @@ export interface IRpcMessage extends IMessage {
     method: string;
 }
 export function isRpcMessage(message: any): message is IRpcMessage {
-    return message.id && message.type === "RPC" && message.method && message.payload && (message.direction === "REQUEST" || message.direction === "RESPONSE");
+    return message.id && message.type === "RPC" && message.method && (message.direction === "REQUEST" || message.direction === "RESPONSE");
 }
 
 export interface IControlMessage extends IMessage {

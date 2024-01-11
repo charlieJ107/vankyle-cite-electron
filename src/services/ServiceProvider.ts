@@ -15,11 +15,24 @@ export class ServiceProvider {
             (data: { name: string, serviceInfo: IServiceInfo }) => {
                 this.registerRemoteService(data.name, data.serviceInfo)
             });
+
+        // notify the app that the service provider is ready
         this.readyPromise = new Promise<void>((resolve) => {
             this.agent.subscribe(SERVICE_PROVIDER_READY_CHANNEL, () => {
                 resolve();
             });
         });
+    }
+
+    // notify the app that the service provider is ready
+    public ready() {
+        console.log("publishing ready");
+        this.agent.publish(SERVICE_PROVIDER_READY_CHANNEL, {});
+    }
+    // wait for the app to be ready
+    public whenServiceReady() {
+        console.log("waiting for ready");
+        return this.readyPromise;
     }
 
     public registerService(name: string, service: any) {
@@ -39,13 +52,6 @@ export class ServiceProvider {
         };
         this.services.set(name, serviceInfo);
         this.agent.publish(SERVICE_PROVIDER_REGISTER_SERVICE_CHANNEL, { name, serviceInfo });
-    }
-
-    public ready() {
-        this.agent.publish(SERVICE_PROVIDER_READY_CHANNEL, {});
-    }
-    public whenServiceReady() {
-        return this.readyPromise;
     }
 
     private registerRemoteService(name: string, service: IServiceInfo) {

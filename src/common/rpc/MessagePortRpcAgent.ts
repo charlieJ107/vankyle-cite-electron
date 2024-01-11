@@ -6,7 +6,7 @@ export class MessagePortRpcAgent implements IRpcAgent {
     private managerPort: MessagePort | MessagePortMain | null; // MessagePort to ServiceManager
     private pendingCalls: Map<number, { resolve: (value: any) => void, reject: (reason: any) => void }>;
     private postIpcMessage: (message: IIpcMessage, transfer?: MessagePortMain[] | MessagePort[]) => void;
-    private agentId: string;
+    public readonly agentId: string;
     private methods: Map<string, any> = new Map();
     private subscriptions: Map<string, Function[]> = new Map();
     constructor(postIpcMessage: (message: IIpcMessage, transfer: MessagePortMain[] | MessagePort[]) => void) {
