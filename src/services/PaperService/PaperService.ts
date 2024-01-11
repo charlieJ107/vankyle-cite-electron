@@ -9,4 +9,10 @@ export class PaperService {
     getAllPapers(paging?: { page: number, pageSize: number, total: number }): Promise<Paper[]> {
         return this.database.getList();
     }
+    getPaper(id: string): Promise<Paper> {
+        return this.database.get(id);
+    }
+    savePaper(paper: Paper): Promise<void> {
+        return this.database.save(paper);
+    }
 }

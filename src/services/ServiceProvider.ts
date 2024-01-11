@@ -39,7 +39,6 @@ export class ServiceProvider {
         };
         this.services.set(name, serviceInfo);
         this.agent.publish(SERVICE_PROVIDER_REGISTER_SERVICE_CHANNEL, { name, serviceInfo });
-
     }
 
     public ready() {
