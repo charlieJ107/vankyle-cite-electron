@@ -74,5 +74,24 @@ export class ServiceProvider {
         return appService;
     }
 
+    public registerServiceServer(name: string, service: any) {
+        this.serviceInstances.set(name, service);
+    }
+
+    public getService(name: string) {
+
+        if (this.serviceInstances.has(name)) {
+            return this.serviceInstances.get(name);
+        }
+        const serviceInfo = this.services.get(name);
+        if (!serviceInfo) {
+            throw new Error(`Service ${name} not found`);
+        }
+        const service: any = {};
+        serviceInfo.methods.forEach((method) => {
+            service[method] = this.agent.resolve(`${name}.${method}`);
+        });
+        return service;
+    }
 
 }
