@@ -6,14 +6,14 @@ import { Title3 } from "@fluentui/react-components";
 export function Marketplace() {
     const [plugins, setPlugins] = useState<IPlugin[]>([]);
     useEffect(() => {
-        window.AppServices.PluginService.getPlugins().then((plugins) => {
+        window.App.Services.PluginManager.getInstalledPlugins().then((plugins) => {
             setPlugins(plugins);
         });
     }, []);
 
     const onEnablePlugin = (plugin: PluginManifest) => {
-        window.AppServices.PluginService.enablePlugin(plugin).then(() => {
-            window.AppServices.PluginService.getPlugins().then((newPlugins) => {
+        window.App.Services.PluginManager.enablePlugin(plugin).then(() => {
+            window.App.Services.PluginManager.getInstalledPlugins().then((newPlugins) => {
                 setPlugins(newPlugins);
             });
         });
@@ -21,8 +21,8 @@ export function Marketplace() {
     }
 
     const onDisablePlugin = (plugin: PluginManifest) => {
-        window.AppServices.PluginService.disablePlugin(plugin).then(() => {
-            window.AppServices.PluginService.getPlugins().then((newPlugins) => {
+        window.App.Services.PluginManager.disablePlugin(plugin).then(() => {
+            window.App.Services.PluginManager.getInstalledPlugins().then((newPlugins) => {
                 setPlugins(newPlugins);
             });
         });
