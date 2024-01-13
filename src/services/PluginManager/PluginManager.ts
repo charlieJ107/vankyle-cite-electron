@@ -13,11 +13,12 @@ export class PluginManager {
     private cofnig: IConfig;
     private installedPlugins: Map<string, InstalledPlugin>;
     private pluginService: PluginService;
-    constructor(config: IConfig, puginService: PluginService) {
+    constructor(config: IConfig, pluginService: PluginService) {
         this.cofnig = config;
         // create config.plugins.plugin_dir if not exists
         fsExtra.ensureDirSync(this.cofnig.plugins.plugin_dir);
         this.installedPlugins = new Map();
+        this.pluginService = pluginService;
     }
 
     async getInstalledPlugins(): Promise<IPlugin[]> {
