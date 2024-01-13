@@ -15,9 +15,8 @@ export function init() {
         serviceProcess.postMessage(message, event.ports);
     });
     const rpcAgent = new MessagePortRpcAgent((message, transfer) => { serviceProcess.postMessage(message, transfer as MessagePortMain[]) });
-    const pluginServiceServer = new PluginServiceServer(rpcAgent);
-    const serviceProvider = new ServiceProvider(rpcAgent);
-    serviceProvider.registerServiceServer("PluginService", pluginServiceServer);
+    const serviceProvider = new ServiceProvider(rpcAgent);  
+    serviceProvider.registerServiceServer("PluginService", new PluginServiceServer(rpcAgent));
     serviceProvider.registerService("FileSystemService", new FileSystemService());
     // Show the app window as soon as possible
     createAppWindow();

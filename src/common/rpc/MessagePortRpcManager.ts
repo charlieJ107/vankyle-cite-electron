@@ -7,6 +7,7 @@ export class MessagePortRpcManager implements IRpcManager {
     private pendingCalls: Map<number, { resolve: (result: any) => void; reject: (reason: any) => void }>;
     private methods: Map<string, string> = new Map();
     private subscriptions: Map<string, string[]> = new Map();
+    private publishedMessages: { channel: string, paylaod: any }[] = [];
     constructor() {
         this.agents = new Map();
         this.pendingCalls = new Map();
@@ -46,7 +47,9 @@ export class MessagePortRpcManager implements IRpcManager {
 
         this.agents.set(agentId, port);
         port.start();
-        for (const [method, provider] of this.methods.entries()) {
+
+        // Register all methods to the new agent
+        for (const method of this.methods.keys()) {
             const controlMessage: IControlMessage = {
                 type: "CONTROL",
                 id: Date.now() + Math.floor(Math.random() * 10),
@@ -54,7 +57,6 @@ export class MessagePortRpcManager implements IRpcManager {
                 payload: method
             };
             port.postMessage(controlMessage);
-
         }
     }
 
@@ -76,13 +78,8 @@ export class MessagePortRpcManager implements IRpcManager {
             const message = event.data as IControlMessage;
             switch (message.command) {
                 case "REGISTER":
-                    this.methods.set(message.payload, providerId);
-                    for (const [id, port] of this.agents.entries()) {
-                        if (id === providerId) {
-                            continue;
-                        }
-                        port.postMessage(message);
-                    }
+                    this.onRegister(providerId, message);
+                    break;
                 case "SUBSCRIBE":
                     this.onSubsrcibe(providerId, message);
                     break;
@@ -94,6 +91,16 @@ export class MessagePortRpcManager implements IRpcManager {
             this.onPublish(providerId, event.data);
         } else {
             console.warn("Invalid message received, expected RPC or Control message: ", event.data);
+        }
+    }
+
+    private onRegister(providerId: string, message: IControlMessage) {
+        this.methods.set(message.payload, providerId);
+        for (const [id, port] of this.agents.entries()) {
+            if (id === providerId) {
+                continue;
+            }
+            port.postMessage(message);
         }
     }
 
@@ -144,15 +151,24 @@ export class MessagePortRpcManager implements IRpcManager {
             const subscriberPort = this.agents.get(subscriber) as MessagePort | MessagePortMain;
             subscriberPort.postMessage(message);
         }
+        this.publishedMessages.push({ channel: message.channel, paylaod: message.payload });
     }
 
     private onSubsrcibe(provider: string, message: IControlMessage) {
         const { payload } = message;
-        if (!this.subscriptions.has(payload)) {
-            this.subscriptions.set(payload, []);
+        this.subscriptions.set(payload, [...(this.subscriptions.get(payload) || []), provider]);
+        // Publish all messages to the new agent
+        for (const publishedMessage of this.publishedMessages) {
+            if (publishedMessage.channel === payload) {
+                const publishMessage: IPublishMessage = {
+                    id: Date.now() + Math.floor(Math.random() * 10),
+                    type: "PUBLISH",
+                    channel: publishedMessage.channel,
+                    payload: publishedMessage.paylaod
+                };
+                const port = this.agents.get(provider) as MessagePort | MessagePortMain;
+                port.postMessage(publishMessage);
+            }
         }
-        const subscribers = this.subscriptions.get(payload) as string[];
-        subscribers.push(provider);
-        this.subscriptions.set(payload, subscribers);
     }
 }

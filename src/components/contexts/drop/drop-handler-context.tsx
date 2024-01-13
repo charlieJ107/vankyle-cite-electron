@@ -12,7 +12,6 @@ export function DropHandlerContextProvider({ children }: { children: JSX.Element
                 const filePaths = event.dataTransfer.files;
                 const paths = []
                 for (let i = 0; i < filePaths.length; i++) {
-                    console.log(filePaths[i].path);
                     paths.push(filePaths[i].path);
                 }
                 window.App.Services.DropService.handleDropEvent(paths);

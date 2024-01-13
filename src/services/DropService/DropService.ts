@@ -55,7 +55,6 @@ export class DropServiceServer {
     }
 
     private handleDropEvent(filePaths: string[]): void {
-        console.log("handleDropEvent: ", filePaths)
         let paper: Paper;
         this.dropHandlers.forEach((handler) => {
             paper = handler(filePaths);

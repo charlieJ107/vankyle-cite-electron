@@ -5,6 +5,9 @@ export interface IServiceInfo {
     methods: string[];
 }
 
+// Just a type alias for any service
+export type IService = any;
+
 export function Service() {
     return function (value: new (...args: any[]) => any, context: ClassDecoratorContext) {
         const methods = Object.getOwnPropertyNames(value.prototype).filter((name) => name !== "constructor" && typeof value.prototype[name] === "function");

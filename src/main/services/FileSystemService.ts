@@ -6,7 +6,7 @@ export class FileSystemService {
     constructor() {
     }
 
-    getPath(name: PathName) {
+    async getPath(name: PathName) {
         return app.getPath(name);
     }
 }

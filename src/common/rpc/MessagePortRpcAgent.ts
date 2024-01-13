@@ -66,7 +66,7 @@ export class MessagePortRpcAgent implements IRpcAgent {
                     console.warn("Invalid Control message command: ", message);
                     break;
             }
-        } else if (isPublishMessage(event.data)){
+        } else if (isPublishMessage(event.data)) {
             this.onPublish(event.data);
         } else {
             console.warn("Invalid message received, expected RPC or Control message: ", event.data);
@@ -184,12 +184,7 @@ export class MessagePortRpcAgent implements IRpcAgent {
         this.managerPort.postMessage(message);
     }
     public subscribe(name: string, func: (...args: any[]) => any) {
-        if (!this.subscriptions.has(name)) {
-            this.subscriptions.set(name, []);
-        }
-        const subscribers = this.subscriptions.get(name) as Function[];
-        subscribers.push(func);
-
+        this.subscriptions.set(name, [...(this.subscriptions.get(name) || []), func]);
         const message: IControlMessage = {
             id: Date.now() + Math.floor(Math.random() * 10),
             type: "CONTROL",
