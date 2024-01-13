@@ -14,9 +14,16 @@ const appServiceAgent = new MessagePortRpcAgent((message, transfer) => {
 const serviceProvider = new ServiceProvider(appServiceAgent);
 
 serviceProvider.registerServiceClient("DropService", () => new DropService(appServiceAgent));
-
-contextBridge.exposeInMainWorld("App", {
-    get Services() {
-        return serviceProvider.getAppServices();
-    }
+serviceProvider.waitForServices(
+    "FileSystemService",
+    "ConfigService",
+    "PluginManager",
+    "DropService",
+    "PaperService"
+).then(() => {
+    contextBridge.exposeInMainWorld("App", {
+        get Services() {
+            return serviceProvider.getAppServices();
+        }
+    });
 });

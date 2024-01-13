@@ -28,12 +28,14 @@ export class MessagePortRpcAgent implements IRpcAgent {
             case "utility":
                 const channel = new MessageChannel();
                 this.managerPort = channel.port1;
+                this.managerPort.start();
                 this.managerPort.onmessage = (messageEvent) => { this.onManagerMessage(messageEvent); }
                 this.postIpcMessage(registerServiceProviderMessage, [channel.port2]);
                 break;
             case "browser":
                 const channelMain = new MessageChannelMain();
                 this.managerPort = channelMain.port1;
+                this.managerPort.start();
                 this.managerPort.on("message", (messageEvent) => { this.onManagerMessage(messageEvent); })
                 this.postIpcMessage(registerServiceProviderMessage, [channelMain.port2]);
                 break;
@@ -47,10 +49,10 @@ export class MessagePortRpcAgent implements IRpcAgent {
             const message = event.data as IRpcMessage;
             switch (message.direction) {
                 case "REQUEST":
-                    this.onRpcRequest(message);
+                    await this.onRpcRequest(message);
                     break;
                 case "RESPONSE":
-                    this.onResponse(message);
+                    await this.onResponse(message);
                     break;
                 default:
                     console.warn("Invalid RPC message direction: ", message);
@@ -98,11 +100,13 @@ export class MessagePortRpcAgent implements IRpcAgent {
         this.pendingCalls.delete(id);
     }
     private onRegister(message: IControlMessage) {
-        if (this.methods.has(message.payload)) {
-            console.warn("Method already registered: ", message);
-            return;
+        const method = message.payload as string;
+        if (this.methods.has(method)) {
+            console.warn("Method already registered, but overwriting: ", message);
+            // Overwrite existing method because it may be a new version
+            // return;
         }
-        this.methods.set(message.payload, (...args: any[]) => this.call(message.payload, ...args));
+        this.methods.set(method, (...args: any[]) => this.call(method, ...args));
     }
     private async onRpcRequest(message: IRpcMessage) {
         const { id, method, payload } = message;

@@ -58,6 +58,7 @@ export class MessagePortRpcManager implements IRpcManager {
             };
             port.postMessage(controlMessage);
         }
+
     }
 
     private onAgentMessage(providerId: string, event: globalThis.MessageEvent | Electron.MessageEvent): void {

@@ -3,6 +3,7 @@ import { IPlugin, PluginManifest, isValidPluginManifest } from "@/plugins/Plugin
 import { PluginService } from "@/plugins/PluginService";
 import fs from "fs";
 import path from "path";
+import fsExtra from "fs-extra";
 
 type InstalledPlugin = {
     dir: string;
@@ -15,9 +16,7 @@ export class PluginManager {
     constructor(config: IConfig, puginService: PluginService) {
         this.cofnig = config;
         // create config.plugins.plugin_dir if not exists
-        if (!fs.existsSync(this.cofnig.plugins.plugin_dir)) {
-            fs.mkdirSync(this.cofnig.plugins.plugin_dir);
-        }
+        fsExtra.ensureDirSync(this.cofnig.plugins.plugin_dir);
         this.plugins = new Map();
     }
 

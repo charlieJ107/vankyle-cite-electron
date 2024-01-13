@@ -46,7 +46,6 @@ export class ServiceProvider {
         this.services.set(name, serviceInfo);
         this.agent.publish(SERVICE_PROVIDER_REGISTER_SERVICE_CHANNEL, { name, serviceInfo });
         if (this.pendingDependencyPromises.has(name)) {
-            console.log(`Service ${name} registered, resolving pending promises`);
             this.pendingDependencyPromises.get(name).forEach((solution) => {
                 solution.resolve();
             });
@@ -68,7 +67,6 @@ export class ServiceProvider {
     private registerRemoteService(name: string, service: IServiceInfo) {
         this.services.set(name, service);
         if (this.pendingDependencyPromises.has(name)) {
-            console.log(`Service ${name} registered, resolving pending promises`);
             this.pendingDependencyPromises.get(name).forEach((solution) => {
                 solution.resolve();
             });
@@ -81,7 +79,13 @@ export class ServiceProvider {
         for (const [name, service] of this.services.entries()) {
             appService[name] = {};
             if (this.serviceInstances.has(name)) {
-                appService[name] = this.serviceInstances.get(name);
+                const instance = this.serviceInstances.get(name);
+                appService[name] = {};
+                this.getServiceInfo(name, instance).methods.forEach((method) => {
+                    appService[name][method] = (...args: any[]) => {
+                        return instance[method](...args);
+                    };
+                });
                 continue;
             }
             service.methods.forEach((method) => {
@@ -113,24 +117,45 @@ export class ServiceProvider {
 
     }
 
-    public async registerServiceClient(name: string, factory: () => IService) {
+    public registerServiceClient(name: string, factory: () => IService) {
         if (this.serviceServers.includes(name)) {
             const service = factory();
             this.registerService(name, service);
-        } else {
-            const service = await new Promise<void>((resolve, reject) => {
-                this.pendingServerPromies.set(name, { resolve, reject });
-                setTimeout(() => {
-                    reject(new Error(`Wait for service ${name} server timeout`));
-                }, 1000);
-            }).then((): Promise<IService> => {
-                return factory();
-            });
-            this.registerService(name, service);
+            return;
         }
+        new Promise<void>((resolve, reject) => {
+            this.pendingServerPromies.set(name, { resolve, reject });
+            setTimeout(() => {
+                reject(new Error(`Wait for service ${name} server timeout`));
+            }, 1000);
+        }).then((): Promise<IService> => {
+            return factory();
+        }).then((service) => {
+            this.registerService(name, service);
+        });
     }
 
-    public async registeServiceFactory<T extends IService>(name: string, factory: () => T, ...dependencies: string[]) {
+    public registerPrivateServiceClient(name: string, factory: () => IService) {
+        if (this.serviceServers.includes(name)) {
+            const service = factory();
+            this.serviceInstances.set(name, service);
+            return;
+        }
+
+        new Promise<void>((resolve, reject) => {
+            this.pendingServerPromies.set(name, { resolve, reject });
+            setTimeout(() => {
+                reject(new Error(`Wait for service ${name} server timeout`));
+            }, 1000);
+        }).then((): Promise<IService> => {
+            return factory();
+        }).then((service) => {
+            this.serviceInstances.set(name, service);
+        });
+
+    }
+
+    public async registeServiceFactory<T extends IService>(name: string, factory: () => Promise<T>, ...dependencies: string[]) {
         const waitForService = (name: string) => {
             if (this.services.has(name)) {
                 return Promise.resolve();
@@ -144,15 +169,14 @@ export class ServiceProvider {
             }
         }
         await Promise.all(dependencies.map(waitForService)).then(() => {
-            const service = factory();
-            console.log(`Service ${name} initialized from factory, registering service`);
-            this.registerService(name, service);
+            factory().then((service) => {
+                this.registerService(name, service);
+            });
         });
     }
 
     public getService<T extends IService>(name: string): T {
         if (this.serviceInstances.has(name)) {
-            console.log(`Service ${name} already initialized, returning instance`);
             return this.serviceInstances.get(name) as T;
         }
         const serviceInfo = this.services.get(name);
@@ -163,8 +187,22 @@ export class ServiceProvider {
         serviceInfo.methods.forEach((method) => {
             service[method] = this.agent.resolve(`${name}.${method}`);
         });
-        console.log(`Service ${name} not initialized, returning proxy`);
         return service;
+    }
+    public waitForServices(...names: string[]): Promise<void[]> {
+        const waitForService = (name: string) => {
+            if (this.services.has(name)) {
+                return Promise.resolve();
+            } else {
+                return new Promise<void>((resolve, reject) => {
+                    this.pendingDependencyPromises.set(name, [...(this.pendingDependencyPromises.get(name) || []), { resolve, reject }]);
+                    setTimeout(() => {
+                        reject(new Error(`Wait for service ${name} timeout`));
+                    }, 1000);
+                });
+            }
+        }
+        return Promise.all(names.map(waitForService));
     }
 
 }
