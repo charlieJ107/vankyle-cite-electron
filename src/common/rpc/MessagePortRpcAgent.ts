@@ -17,7 +17,7 @@ export class MessagePortRpcAgent implements IRpcAgent {
 
         // Register self as a service provider to ServiceManager
         const registerServiceProviderMessage: IIpcMessage = {
-            id: Date.now() + Math.floor(Math.random() * 10),
+            id: Date.now() + Math.floor(Math.random() * 100),
             type: "IPC",
             channel: REGISTER_AGENT,
             payload: this.agentId,
@@ -142,7 +142,7 @@ export class MessagePortRpcAgent implements IRpcAgent {
         if (!this.managerPort) {
             throw new Error("ServiceManager port not initialized");
         }
-        const id = Date.now() + Math.floor(Math.random() * 10);
+        const id = Date.now() + Math.floor(Math.random() * 100);
         const message: IRpcMessage = {
             id,
             type: "RPC",
@@ -161,7 +161,7 @@ export class MessagePortRpcAgent implements IRpcAgent {
         this.methods.set(name, func);
         if (this.managerPort) {
             const message: IControlMessage = {
-                id: Date.now() + Math.floor(Math.random() * 10),
+                id: Date.now() + Math.floor(Math.random() * 100),
                 type: "CONTROL",
                 command: REGISTER,
                 payload: name,
@@ -180,7 +180,7 @@ export class MessagePortRpcAgent implements IRpcAgent {
 
     public publish(name: string, info: any) {
         const message: IPublishMessage = {
-            id: Date.now() + Math.floor(Math.random() * 10),
+            id: Date.now() + Math.floor(Math.random() * 100),
             type: "PUBLISH",
             channel: name,
             payload: info,
@@ -190,7 +190,7 @@ export class MessagePortRpcAgent implements IRpcAgent {
     public subscribe(name: string, func: (...args: any[]) => any) {
         this.subscriptions.set(name, [...(this.subscriptions.get(name) || []), func]);
         const message: IControlMessage = {
-            id: Date.now() + Math.floor(Math.random() * 10),
+            id: Date.now() + Math.floor(Math.random() * 100),
             type: "CONTROL",
             command: "SUBSCRIBE",
             payload: name

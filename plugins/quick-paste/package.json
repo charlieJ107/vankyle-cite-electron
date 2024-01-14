@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "manifest_version": "1.0.0",
+  "displayName": "Quick Paste",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },

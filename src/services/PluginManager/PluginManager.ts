@@ -4,26 +4,28 @@ import { PluginService } from "@/plugins/PluginService";
 import fs from "fs";
 import path from "path";
 import fsExtra from "fs-extra";
+import { ConfigService } from "../ConfigService/ConfigService";
 
 type InstalledPlugin = {
     dir: string;
 } & IPlugin;
 
 export class PluginManager {
-    private cofnig: IConfig;
     private installedPlugins: Map<string, InstalledPlugin>;
     private pluginService: PluginService;
-    constructor(config: IConfig, pluginService: PluginService) {
-        this.cofnig = config;
+    private configService: ConfigService;
+    constructor(initialConfig: IConfig, pluginService: PluginService, configService: ConfigService) {
         // create config.plugins.plugin_dir if not exists
-        fsExtra.ensureDirSync(this.cofnig.plugins.plugin_dir);
+        fsExtra.ensureDirSync(initialConfig.plugins.plugin_dir);
         this.installedPlugins = new Map();
         this.pluginService = pluginService;
+        this.configService = configService;
     }
 
     async getInstalledPlugins(): Promise<IPlugin[]> {
-        const installedPlugins = await Promise.all((await fs.promises.readdir(this.cofnig.plugins.plugin_dir)).filter((dir) => {
-            const packageJsonPath = path.join(this.cofnig.plugins.plugin_dir, dir, "package.json");
+        const config = await this.configService.getConfig();
+        const installedPlugins = await Promise.all((await fs.promises.readdir(config.plugins.plugin_dir)).filter((dir) => {
+            const packageJsonPath = path.join(config.plugins.plugin_dir, dir, "package.json");
             try {
                 if (!fs.existsSync(packageJsonPath)) {
                     return false;
@@ -39,11 +41,11 @@ export class PluginManager {
                 console.warn(`Failed to read plugin manifest at ${packageJsonPath}`, e);
                 return false;
             }
-        }).map(async (dir) => {
-            const packageJsonPath = path.join(this.cofnig.plugins.plugin_dir, dir, "package.json");
-            const contnet = await fs.promises.readFile(packageJsonPath, "utf-8");
+        }).map((dir) => {
+            const packageJsonPath = path.join(config.plugins.plugin_dir, dir, "package.json");
+            const contnet = fs.readFileSync(packageJsonPath, "utf-8");
             const manifest = JSON.parse(contnet);
-            if (this.cofnig.plugins.enabled_plugins.includes(manifest.name)) {
+            if (config.plugins.enabled_plugins.includes(manifest.name)) {
                 return {
                     manifest,
                     dir,
@@ -62,28 +64,56 @@ export class PluginManager {
         for (const plugin of installedPlugins) {
             this.installedPlugins.set(plugin.manifest.name, plugin);
             if (plugin.status === "enabled") {
-                const pluginDir = path.join(this.cofnig.plugins.plugin_dir, plugin.dir);
-                await this.pluginService.enablePlugin(plugin.manifest, pluginDir);
+                const pluginDir = path.join(config.plugins.plugin_dir, plugin.dir);
+                await this.pluginService.isEnabled(plugin.manifest.name).then((enabled) => {
+                    if (!enabled) {
+                        this.pluginService.enablePlugin(plugin.manifest, pluginDir);
+                    }
+                });
             } else if (plugin.status === "disabled") {
-                await this.pluginService.disablePlugin(plugin.manifest);
+                await this.pluginService.isEnabled(plugin.manifest.name).then((enabled) => {
+                    if (enabled) {
+                        this.pluginService.disablePlugin(plugin.manifest);
+                    }
+                });
             }
         }
         return installedPlugins;
     }
 
     async enablePlugin(plugin: PluginManifest): Promise<void> {
+        const config = await this.configService.getConfig();
         const installedPlugin = this.installedPlugins.get(plugin.name);
         if (!installedPlugin) {
             throw new Error(`Plugin ${plugin.name} is not installed`);
         }
         const dir = installedPlugin.dir;
-        const pluginDir = path.join(this.cofnig.plugins.plugin_dir, dir);
-        await this.pluginService.enablePlugin(plugin, pluginDir);
+        const pluginDir = path.join(config.plugins.plugin_dir, dir);
+        const operationPromise = this.pluginService.isEnabled(plugin.name).then((enabled) => {
+            if (!enabled) {
+                this.pluginService.enablePlugin(plugin, pluginDir);
+            }
+        });
+        if (!config.plugins.enabled_plugins.includes(plugin.name)) {
+            config.plugins.enabled_plugins.push(plugin.name);
+            await this.configService.updateConfig(config);
+        }
+        await operationPromise;
     }
 
     async disablePlugin(plugin: PluginManifest): Promise<void> {
-        await this.pluginService.disablePlugin(plugin);
+        const operationPromise = this.pluginService.isEnabled(plugin.name).then((enabled) => {
+            if (enabled) {
+                return this.pluginService.disablePlugin(plugin);
+            } else {
+                return Promise.resolve();
+            }
+        });
+        const configPromise = this.configService.getConfig().then((config) => {
+            config.plugins.enabled_plugins = config.plugins.enabled_plugins.filter((name) => name !== plugin.name);
+            return this.configService.updateConfig(config);
+        });
+        await Promise.all([operationPromise, configPromise]);
     }
-
 
 }

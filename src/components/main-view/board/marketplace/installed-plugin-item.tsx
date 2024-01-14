@@ -4,10 +4,10 @@ import { AppsAddInRegular, MoreHorizontalRegular } from "@fluentui/react-icons";
 
 export function InstalledPluginItem({ plugin, onEnable, onDisable }: { plugin: IPlugin, onEnable: (plugin: PluginManifest) => void, onDisable: (plugin: PluginManifest) => void }) {
     return (
-        <Card>
+        <Card className="my-2">
             <CardHeader
                 image={plugin.manifest.icon ? plugin.manifest.icon : <AppsAddInRegular />}
-                header={plugin.manifest.name}
+                header={plugin.manifest.displayName || plugin.manifest.name}
                 action={
                     <Button icon={<MoreHorizontalRegular />}>
                         {/* TODO: Menu */}

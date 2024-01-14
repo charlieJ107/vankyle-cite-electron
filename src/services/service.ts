@@ -38,6 +38,7 @@ serviceProvider.registeServiceFactory<ConfigService>("ConfigService", async () =
     if (process.env.NODE_ENV === "development") {
         console.log("Running in development mode, using dev-running-app-data");
         appDataPath = path.resolve(__dirname, "..", "..", "dev-running-app-data"); 
+    } else {
         console.log("Running in production mode, using appDataPath");
     }
     return new ConfigService(appDataPath);
@@ -50,11 +51,12 @@ serviceProvider.registeServiceFactory<PluginManager>("PluginManager", async () =
     if (process.env.NODE_ENV === "development") {
         console.log("Running in development mode, using local plugin folders");
         config.plugins.plugin_dir = path.resolve(__dirname, "..", "..", "plugins");
+        await configService.updateConfig(config);
     } else {
         console.log("Running in production mode, using appDataPath");
     }
 
-    return new PluginManager(config, pluginService);
+    return new PluginManager(config, pluginService, configService);
 }, "ConfigService");
 
 

@@ -5,7 +5,7 @@ export interface PluginManifest {
     version: string;
     author: string;
     description?: string;
-    dsiplay_name?: string;
+    displayName?: string;
     icon?: string;
     browsers?: {
         panel?: string;

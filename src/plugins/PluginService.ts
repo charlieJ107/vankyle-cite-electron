@@ -5,6 +5,7 @@ import path from "path";
 
 const ENABLE_PLUGIN = "pluginService.enablePlugin";
 const DISABLE_PLUGIN = "pluginService.disablePlugin";
+const IS_ENABLED = "pluginService.isEnabled";
 export class PluginServiceServer {
     private rpcAgent: IRpcAgent;
     private runningPlugins: Map<string, { window: BrowserWindow, manifest: PluginManifest }>;
@@ -17,11 +18,15 @@ export class PluginServiceServer {
         this.rpcAgent.register(DISABLE_PLUGIN, (manifest: PluginManifest) => {
             this.disablePlugin(manifest);
         });
+
+        this.rpcAgent.register(IS_ENABLED, (name: string) => {
+            this.isEnabled(name);
+        });
     }
 
     private async enablePlugin(manifest: PluginManifest, dir: string) {
         if (this.runningPlugins.has(manifest.name)) {
-            console.warn(`Plugin ${manifest.name} already enabled`);
+            console.warn(`Plugin ${manifest.name} already enabled, skip enable`);
             return;
         }
         let browserWindowOptions: Electron.BrowserWindowConstructorOptions = {
@@ -44,13 +49,17 @@ export class PluginServiceServer {
     private async disablePlugin(manifest: PluginManifest) {
         const plugin = this.runningPlugins.get(manifest.name);
         if (!plugin) {
-            console.warn(`Plugin ${manifest.name} not enabled`);
+            console.warn(`Plugin ${manifest.name} not enabled, skip disable`);
             return;
         }
         plugin.window.close();
         plugin.window.on("closed", () => {
             this.runningPlugins.delete(manifest.name);
         });
+    }
+
+    async isEnabled(name: string) {
+        return this.runningPlugins.has(name);
     }
 
 }
@@ -66,6 +75,10 @@ export class PluginService {
     }
 
     async disablePlugin(manifest: PluginManifest) {
-        await this.rpcAgent.resolve<(manifest: PluginManifest)=>void>(DISABLE_PLUGIN)(manifest);
+        await this.rpcAgent.resolve<(manifest: PluginManifest) => Promise<void>>(DISABLE_PLUGIN)(manifest);
+    }
+
+    async isEnabled(name: string) {
+        return await this.rpcAgent.resolve<(name: string) => Promise<boolean>>(IS_ENABLED)(name);
     }
 }

@@ -52,7 +52,7 @@ export class MessagePortRpcManager implements IRpcManager {
         for (const method of this.methods.keys()) {
             const controlMessage: IControlMessage = {
                 type: "CONTROL",
-                id: Date.now() + Math.floor(Math.random() * 10),
+                id: Date.now() + Math.floor(Math.random() * 100),
                 command: REGISTER,
                 payload: method
             };
@@ -115,6 +115,7 @@ export class MessagePortRpcManager implements IRpcManager {
         const providerPort = this.agents.get(provider) as MessagePort | MessagePortMain;
         const result = await new Promise((resolve, reject) => {
             this.pendingCalls.set(id, { resolve, reject });
+            console.log("Add pending call: ", id, "for method: ", method);
             providerPort.postMessage(message);
         });
         const response: IRpcMessage = {
@@ -139,6 +140,7 @@ export class MessagePortRpcManager implements IRpcManager {
         } else {
             resolve(payload);
         }
+        console.log("Delete pending call: ", id);
         this.pendingCalls.delete(id);
     }
 
@@ -162,7 +164,7 @@ export class MessagePortRpcManager implements IRpcManager {
         for (const publishedMessage of this.publishedMessages) {
             if (publishedMessage.channel === payload) {
                 const publishMessage: IPublishMessage = {
-                    id: Date.now() + Math.floor(Math.random() * 10),
+                    id: Date.now() + Math.floor(Math.random() * 100),
                     type: "PUBLISH",
                     channel: publishedMessage.channel,
                     payload: publishedMessage.paylaod
