@@ -1,8 +1,8 @@
 {
-  "name": "vankyle-cite-decorator",
-  "productName": "vankyle-cite-decorator",
+  "name": "vankyle-cite",
+  "productName": "vankyle-cite",
   "version": "1.0.0",
-  "description": "My Electron application description",
+  "description": "Yet another opensource citation manager",
   "main": ".vite/build/main.js",
   "scripts": {
     "start": "electron-forge start",
