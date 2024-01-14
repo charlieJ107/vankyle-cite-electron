@@ -102,18 +102,21 @@ export class PluginManager {
     }
 
     async disablePlugin(plugin: PluginManifest): Promise<void> {
-        const operationPromise = this.pluginService.isEnabled(plugin.name).then((enabled) => {
-            if (enabled) {
-                return this.pluginService.disablePlugin(plugin);
-            } else {
-                return Promise.resolve();
-            }
-        });
-        const configPromise = this.configService.getConfig().then((config) => {
+        if (!this.installedPlugins.has(plugin.name)) {
+            throw new Error(`Plugin ${plugin.name} is not installed`);
+        }
+        console.log(`Disabling plugin ${plugin.name}`);
+        const enabled = await this.pluginService.isEnabled(plugin.name);
+        console.log(`Plugin ${plugin.name} is ${enabled ? "enabled" : "disabled"}`);
+        if (enabled) {
+            console.log(`Disabling plugin ${plugin.name} using plugin service`);
+            await this.pluginService.disablePlugin(plugin);
+        }
+        await this.configService.getConfig().then((config) => {
             config.plugins.enabled_plugins = config.plugins.enabled_plugins.filter((name) => name !== plugin.name);
             return this.configService.updateConfig(config);
         });
-        await Promise.all([operationPromise, configPromise]);
+
     }
 
 }

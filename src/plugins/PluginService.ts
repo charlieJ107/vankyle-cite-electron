@@ -42,23 +42,32 @@ export class PluginServiceServer {
         }
         const window = new BrowserWindow(browserWindowOptions);
         window.loadFile(path.resolve(dir, "index.html"));
+        // if in dev mode, open dev tools
+        if (process.env.NODE_ENV === "development") {
+            window.webContents.openDevTools();
+        }
+
         this.runningPlugins.set(manifest.name, { manifest, window });
 
     }
 
     private async disablePlugin(manifest: PluginManifest) {
+        console.log("PluginService server disablePlugin")
         const plugin = this.runningPlugins.get(manifest.name);
         if (!plugin) {
             console.warn(`Plugin ${manifest.name} not enabled, skip disable`);
             return;
         }
+        console.log("PluginService server closeing window")
         plugin.window.close();
         plugin.window.on("closed", () => {
+            console.log("PluginService server window closed")
             this.runningPlugins.delete(manifest.name);
         });
     }
 
     async isEnabled(name: string) {
+        console.log(`Checking if plugin ${name} is enabled on server`)
         return this.runningPlugins.has(name);
     }
 
@@ -75,10 +84,12 @@ export class PluginService {
     }
 
     async disablePlugin(manifest: PluginManifest) {
+        console.log("PluginService client disablePlugin")
         await this.rpcAgent.resolve<(manifest: PluginManifest) => Promise<void>>(DISABLE_PLUGIN)(manifest);
     }
 
     async isEnabled(name: string) {
+        console.log(`Checking if plugin ${name} is enabled`)
         return await this.rpcAgent.resolve<(name: string) => Promise<boolean>>(IS_ENABLED)(name);
     }
 }

@@ -42,7 +42,9 @@ export function Marketplace() {
     }
 
     const onDisablePlugin = (plugin: PluginManifest) => {
+        console.log("Disabling plugin", plugin);
         window.App.Services.PluginManager.disablePlugin(plugin).then(() => {
+            console.log("Plugin disabled");
             window.App.Services.PluginManager.getInstalledPlugins().then((newPlugins) => {
                 setPlugins(newPlugins);
             });

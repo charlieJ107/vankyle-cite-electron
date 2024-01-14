@@ -58,6 +58,7 @@ export class MessagePortRpcManager implements IRpcManager {
             };
             port.postMessage(controlMessage);
         }
+        console.log(`Agent ${agentId} registered`);
 
     }
 
@@ -115,7 +116,6 @@ export class MessagePortRpcManager implements IRpcManager {
         const providerPort = this.agents.get(provider) as MessagePort | MessagePortMain;
         const result = await new Promise((resolve, reject) => {
             this.pendingCalls.set(id, { resolve, reject });
-            console.log("Add pending call: ", id, "for method: ", method);
             providerPort.postMessage(message);
         });
         const response: IRpcMessage = {
@@ -140,7 +140,6 @@ export class MessagePortRpcManager implements IRpcManager {
         } else {
             resolve(payload);
         }
-        console.log("Delete pending call: ", id);
         this.pendingCalls.delete(id);
     }
 
