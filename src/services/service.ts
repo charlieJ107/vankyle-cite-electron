@@ -34,8 +34,12 @@ serviceProvider.registerService("PaperService", paperService);
 // TODO: Wait for main process to be ready
 serviceProvider.registeServiceFactory<ConfigService>("ConfigService", async () => {
     const fileSystemService = serviceProvider.getService<FileSystemService>("FileSystemService");
-    // const appDataPath = await fileSystemService.getAppDataPath();
-    const appDataPath = path.resolve(__dirname, "..", "..", "dev-running-app-data"); // For development
+    let appDataPath = await fileSystemService.getAppDataPath();
+    if (process.env.NODE_ENV === "development") {
+        console.log("Running in development mode, using dev-running-app-data");
+        appDataPath = path.resolve(__dirname, "..", "..", "dev-running-app-data"); 
+        console.log("Running in production mode, using appDataPath");
+    }
     return new ConfigService(appDataPath);
 }, "FileSystemService");
 serviceProvider.registeServiceFactory<PluginManager>("PluginManager", async () => {
@@ -43,6 +47,13 @@ serviceProvider.registeServiceFactory<PluginManager>("PluginManager", async () =
     const configService = serviceProvider.getService<ConfigService>("ConfigService");
     const pluginService = serviceProvider.getService<PluginService>("PluginService");
     const config = await configService.getConfig();
+    if (process.env.NODE_ENV === "development") {
+        console.log("Running in development mode, using local plugin folders");
+        config.plugins.plugin_dir = path.resolve(__dirname, "..", "..", "plugins");
+    } else {
+        console.log("Running in production mode, using appDataPath");
+    }
+
     return new PluginManager(config, pluginService);
 }, "ConfigService");
 
