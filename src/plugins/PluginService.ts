@@ -10,6 +10,7 @@ export class PluginServiceServer {
     private runningPlugins: Map<string, { window: BrowserWindow, manifest: PluginManifest }>;
     constructor(rpcAgent: IRpcAgent) {
         this.rpcAgent = rpcAgent;
+        this.runningPlugins = new Map();
         this.rpcAgent.register(ENABLE_PLUGIN, (manifest: PluginManifest, dir: string) => {
             this.enablePlugin(manifest, dir);
         });
@@ -35,7 +36,6 @@ export class PluginServiceServer {
             browserWindowOptions.height = manifest.browsers.window.height;
         }
         const window = new BrowserWindow(browserWindowOptions);
-
         window.loadFile(path.resolve(dir, "index.html"));
         this.runningPlugins.set(manifest.name, { manifest, window });
 

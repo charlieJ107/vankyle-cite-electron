@@ -15,6 +15,8 @@ import { PluginService } from "@/plugins/PluginService";
 import { ConfigService } from "./ConfigService/ConfigService";
 import { FileSystemService } from "@/main/services/FileSystemService";
 
+import path from "path";
+
 const RpcManager = new MessagePortRpcManager();
 
 const ServiceAgent = new MessagePortRpcAgent((message, transfer) => {
@@ -32,7 +34,8 @@ serviceProvider.registerService("PaperService", paperService);
 // TODO: Wait for main process to be ready
 serviceProvider.registeServiceFactory<ConfigService>("ConfigService", async () => {
     const fileSystemService = serviceProvider.getService<FileSystemService>("FileSystemService");
-    const appDataPath = await fileSystemService.getAppDataPath();
+    // const appDataPath = await fileSystemService.getAppDataPath();
+    const appDataPath = path.resolve(__dirname, "..", "..", "dev-running-app-data"); // For development
     return new ConfigService(appDataPath);
 }, "FileSystemService");
 serviceProvider.registeServiceFactory<PluginManager>("PluginManager", async () => {

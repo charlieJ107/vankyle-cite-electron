@@ -135,14 +135,14 @@ export class ServiceProvider {
         });
     }
 
-    public registerPrivateServiceClient(name: string, factory: () => IService) {
+    public registerPrivateServiceClient(name: string, factory: () => IService): Promise<void> {
         if (this.serviceServers.includes(name)) {
             const service = factory();
             this.serviceInstances.set(name, service);
-            return;
+            return Promise.resolve();
         }
 
-        new Promise<void>((resolve, reject) => {
+        return new Promise<void>((resolve, reject) => {
             this.pendingServerPromies.set(name, { resolve, reject });
             setTimeout(() => {
                 reject(new Error(`Wait for service ${name} server timeout`));

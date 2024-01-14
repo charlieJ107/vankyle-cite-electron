@@ -1,7 +1,7 @@
 
 export interface PluginManifest {
     name: string;
-    manifest_version: number;
+    manifest_version: string;
     version: string;
     author: string;
     description?: string;
@@ -27,7 +27,7 @@ export function isValidPluginManifest(manifest: any): manifest is PluginManifest
     } else if (manifest.name !== manifest.name.toLowerCase()) {
         console.warn("Plugin manifest name is not all lowercase");
         return false;
-    } else if (typeof manifest.manifest_version !== 'number') {
+    } else if (typeof manifest.manifest_version !== 'string') {
         console.warn("Plugin manifest manifest_version is not a number");
         return false;
     } else if (typeof manifest.version !== 'string') {
