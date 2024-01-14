@@ -90,3 +90,7 @@ typings/
 
 # Electron-Forge
 out/
+
+
+# Dev Runtime data
+# dev-running-app-data
