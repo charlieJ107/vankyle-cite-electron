@@ -32,11 +32,7 @@ const config: ForgeConfig = {
         {
           name: 'app',
           config: 'vite.app.config.ts',
-        },
-        {
-          name: 'quick_paste',
-          config: 'plugins/quick-paste/vite.quick-paste.config.ts',
-        },
+        }
       ],
     }),
   ],

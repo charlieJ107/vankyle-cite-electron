@@ -39,8 +39,11 @@ export class PluginServiceServer {
             if (manifest.main.endsWith(".html")) {
                 loadFile = path.join(dir, manifest.main);
             } else if (manifest.main.endsWith(".js")) {
-                // TODO: load js file
-                console.warn(`Plugin ${manifest.name} main is js file, not supported yet, skip enable`);
+                const jsContent = fs.readFileSync(path.join(dir, manifest.main), "utf-8");
+                const htmlContent = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${manifest.name}</title></head><body><script>${jsContent}</script></body></html>`;
+                fs.writeFileSync(loadFile, htmlContent);
+            } else {
+                console.warn(`Plugin ${manifest.name} main is not html or js, skip enable`);
                 return;
             }
         } else {

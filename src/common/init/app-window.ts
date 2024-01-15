@@ -1,4 +1,4 @@
-import { BrowserWindow } from "electron";
+import { BrowserWindow, app } from "electron";
 import path from "path";
 
 export function createAppWindow(windowId?: string) {
@@ -24,5 +24,11 @@ export function createAppWindow(windowId?: string) {
     } else {
         mainWindow.loadFile(path.join(__dirname, `../renderer/${APP_VITE_NAME}/index.html`));
     }
+
+    mainWindow.on('closed', () => {
+        if (process.platform !== 'darwin') {
+            app.quit();
+        }
+    });
     return mainWindow;
 }

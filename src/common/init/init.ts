@@ -20,6 +20,7 @@ export function init() {
     serviceProvider.registerService("FileSystemService", new FileSystemService());
     // Show the app window as soon as possible
     createAppWindow();
+    
 
     // TODO: Initialize services and provider
 
