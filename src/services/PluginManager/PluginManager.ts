@@ -22,7 +22,7 @@ export class PluginManager {
         this.configService = configService;
     }
 
-    async getInstalledPlugins(): Promise<IPlugin[]> {
+    async getInstalledPlugins(): Promise<InstalledPlugin[]> {
         const config = await this.configService.getConfig();
         const installedPlugins = await Promise.all((await fs.promises.readdir(config.plugins.plugin_dir)).filter((dir) => {
             const packageJsonPath = path.join(config.plugins.plugin_dir, dir, "package.json");
@@ -105,11 +105,8 @@ export class PluginManager {
         if (!this.installedPlugins.has(plugin.name)) {
             throw new Error(`Plugin ${plugin.name} is not installed`);
         }
-        console.log(`Disabling plugin ${plugin.name}`);
         const enabled = await this.pluginService.isEnabled(plugin.name);
-        console.log(`Plugin ${plugin.name} is ${enabled ? "enabled" : "disabled"}`);
         if (enabled) {
-            console.log(`Disabling plugin ${plugin.name} using plugin service`);
             await this.pluginService.disablePlugin(plugin);
         }
         await this.configService.getConfig().then((config) => {

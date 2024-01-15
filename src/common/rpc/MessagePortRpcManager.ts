@@ -52,7 +52,7 @@ export class MessagePortRpcManager implements IRpcManager {
         for (const method of this.methods.keys()) {
             const controlMessage: IControlMessage = {
                 type: "CONTROL",
-                id: Date.now() + Math.floor(Math.random() * 100),
+                id:  Math.floor(Math.random() * 10000),
                 command: REGISTER,
                 payload: method
             };
@@ -163,7 +163,7 @@ export class MessagePortRpcManager implements IRpcManager {
         for (const publishedMessage of this.publishedMessages) {
             if (publishedMessage.channel === payload) {
                 const publishMessage: IPublishMessage = {
-                    id: Date.now() + Math.floor(Math.random() * 100),
+                    id:  Math.floor(Math.random() * 10000),
                     type: "PUBLISH",
                     channel: publishedMessage.channel,
                     payload: publishedMessage.paylaod
