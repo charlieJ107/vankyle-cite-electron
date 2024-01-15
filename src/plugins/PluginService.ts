@@ -25,7 +25,7 @@ export class PluginServiceServer {
         let browserWindowOptions: Electron.BrowserWindowConstructorOptions = {
             show: false,
             webPreferences: {
-                preload: "preload.js"
+                preload: path.join(__dirname, 'preload.js')
             }
         };
         if (manifest.browsers && manifest.browsers.window) {

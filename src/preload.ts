@@ -13,7 +13,7 @@ const appServiceAgent = new MessagePortRpcAgent((message, transfer) => {
 
 const serviceProvider = new ServiceProvider(appServiceAgent);
 
-serviceProvider.registerServiceClient("DropService", () => new DropService(appServiceAgent));
+serviceProvider.registerPrivateServiceClient("DropService", () => new DropService(appServiceAgent));
 serviceProvider.waitForServices(
     "FileSystemService",
     "ConfigService",

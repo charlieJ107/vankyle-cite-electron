@@ -117,24 +117,6 @@ export class ServiceProvider {
 
     }
 
-    public registerServiceClient(name: string, factory: () => IService) {
-        if (this.serviceServers.includes(name)) {
-            const service = factory();
-            this.registerService(name, service);
-            return;
-        }
-        new Promise<void>((resolve, reject) => {
-            this.pendingServerPromies.set(name, { resolve, reject });
-            setTimeout(() => {
-                reject(new Error(`Wait for service ${name} server timeout`));
-            }, 1000);
-        }).then((): Promise<IService> => {
-            return factory();
-        }).then((service) => {
-            this.registerService(name, service);
-        });
-    }
-
     public registerPrivateServiceClient(name: string, factory: () => IService): Promise<void> {
         if (this.serviceServers.includes(name)) {
             const service = factory();
@@ -151,6 +133,12 @@ export class ServiceProvider {
             return factory();
         }).then((service) => {
             this.serviceInstances.set(name, service);
+            if (this.pendingDependencyPromises.has(name)) {
+                this.pendingDependencyPromises.get(name).forEach((solution) => {
+                    solution.resolve();
+                });
+                this.pendingDependencyPromises.delete(name);
+            }
         });
 
     }
@@ -191,7 +179,7 @@ export class ServiceProvider {
     }
     public waitForServices(...names: string[]): Promise<void[]> {
         const waitForService = (name: string) => {
-            if (this.services.has(name)) {
+            if (this.serviceInstances.has(name) || this.services.has(name)) {
                 return Promise.resolve();
             } else {
                 return new Promise<void>((resolve, reject) => {
