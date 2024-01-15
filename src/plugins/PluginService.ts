@@ -29,10 +29,10 @@ export class PluginServiceServer {
                 preload: path.join(__dirname, 'preload.js')
             }
         };
-        if (manifest.browsers && manifest.browsers.window) {
+        if (manifest.show && manifest.show.window) {
             browserWindowOptions.show = true;
-            browserWindowOptions.width = manifest.browsers.window.width;
-            browserWindowOptions.height = manifest.browsers.window.height;
+            browserWindowOptions.width = manifest.show.window.width;
+            browserWindowOptions.height = manifest.show.window.height;
         }
         let loadFile = path.join(dir, "index.html");
         if (manifest.main) {

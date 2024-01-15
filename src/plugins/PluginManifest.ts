@@ -8,7 +8,7 @@ export interface PluginManifest {
     description?: string;
     displayName?: string;
     icon?: string;
-    browsers?: {
+    show?: {
         panel?: string;
         board?: string;
         window?: {
