@@ -22,6 +22,13 @@ export class PluginManager {
         this.configService = configService;
     }
 
+    /**
+     * 目前的逻辑：扫描，然后按照配置的开关来启停插件
+     * expected behavior: 分成两个函数
+     * 1. 扫描安装的插件，刷新插件列表和插件状态，然后刷新配置开关（因为config中插件的状态和实际插件的状态可能不一致）
+     * 2. 根据配置的开关来启停插件
+     * 
+     */
     async getInstalledPlugins(): Promise<InstalledPlugin[]> {
         const config = await this.configService.getConfig();
         const installedPlugins = await Promise.all((await fs.promises.readdir(config.plugins.plugin_dir)).filter((dir) => {

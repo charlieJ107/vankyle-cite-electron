@@ -61,6 +61,10 @@ export class PluginServiceServer {
             window.webContents.openDevTools();
         }
 
+        window.on("closed", () => {
+           this.runningPlugins.delete(manifest.name);  
+        });
+
         this.runningPlugins.set(manifest.name, { manifest, window });
 
     }
@@ -72,9 +76,8 @@ export class PluginServiceServer {
             return;
         }
         plugin.window.close();
-        plugin.window.on("closed", () => {
-            this.runningPlugins.delete(manifest.name);
-        });
+        this.runningPlugins.delete(manifest.name);  
+
     }
 
     async isEnabled(name: string) {
