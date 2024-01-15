@@ -4,6 +4,7 @@ export interface PluginManifest {
     manifest_version: string;
     version: string;
     author: string;
+    main?: string;
     description?: string;
     displayName?: string;
     icon?: string;

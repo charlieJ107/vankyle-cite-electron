@@ -3,3 +3,5 @@
 // whether you're running in development or production).
 declare const APP_VITE_DEV_SERVER_URL: string;
 declare const APP_VITE_NAME: string;
+declare const QUICK_PASTE_VITE_DEV_SERVER_URL: string;
+declare const QUICK_PASTE_VITE_NAME: string;

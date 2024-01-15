@@ -2,6 +2,7 @@ import { IRpcAgent } from "@/common/rpc/IRpcAgent";
 import { BrowserWindow, app } from "electron";
 import { PluginManifest } from "./PluginManifest";
 import path from "path";
+import fs from "fs";
 
 const ENABLE_PLUGIN = "pluginService.enablePlugin";
 const DISABLE_PLUGIN = "pluginService.disablePlugin";
@@ -33,8 +34,25 @@ export class PluginServiceServer {
             browserWindowOptions.width = manifest.browsers.window.width;
             browserWindowOptions.height = manifest.browsers.window.height;
         }
+        let loadFile = path.join(dir, "index.html");
+        if (manifest.main) {
+            if (manifest.main.endsWith(".html")) {
+                loadFile = path.join(dir, manifest.main);
+            } else if (manifest.main.endsWith(".js")) {
+                // TODO: load js file
+                console.warn(`Plugin ${manifest.name} main is js file, not supported yet, skip enable`);
+                return;
+            }
+        } else {
+            if (!fs.existsSync(path.join(dir, "index.html"))) {
+                console.warn(`Plugin ${manifest.name} does not have index.html, skip enable`);
+                return;
+            }
+        }
+
         const window = new BrowserWindow(browserWindowOptions);
-        window.loadFile(path.resolve(dir, "index.html"));
+        window.loadFile(loadFile);
+
         // if in dev mode, open dev tools
         if (process.env.NODE_ENV === "development") {
             window.webContents.openDevTools();
