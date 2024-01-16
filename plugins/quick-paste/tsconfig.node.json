@@ -6,5 +6,5 @@
     "moduleResolution": "bundler",
     "allowSyntheticDefaultImports": true
   },
-  "include": ["vite.quick-paste.config.ts"]
+  "include": ["vite.config.ts"]
 }
