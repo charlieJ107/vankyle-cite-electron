@@ -12,6 +12,7 @@
   },
   "devDependencies": {
     "typescript": "^5.2.2",
-    "vite": "^5.0.8"
+    "vite": "^5.0.8",
+    "vankyle-cite-types": "file://../../vankyle-cite-types"
   }
 }

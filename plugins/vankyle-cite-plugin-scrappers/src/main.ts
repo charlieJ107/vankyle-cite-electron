@@ -1,4 +1,5 @@
-
+import "vankyle-cite-types";
+import { Paper } from "vankyle-cite-types";
 export function main(paper: Paper): void {
   // do something with paper
 }
