@@ -18,22 +18,22 @@ export class PluginServiceServer {
         this.rpcAgent.register(IS_ENABLED, (name: string) => this.isEnabled(name));
     }
 
-    private async enablePlugin(manifest: PluginManifest, dir: string) {
+    public async enablePlugin(manifest: PluginManifest, dir: string) {
         if (this.runningPlugins.has(manifest.name)) {
             console.warn(`Plugin ${manifest.name} already enabled, skip enable`);
             return;
         }
-        let browserWindowOptions: Electron.BrowserWindowConstructorOptions = {
-            show: false,
-            webPreferences: {
-                preload: path.join(__dirname, 'preload.js')
-            }
-        };
+        let browserWindowOptions: Electron.BrowserWindowConstructorOptions = { };
         if (manifest.show && manifest.show.window) {
             browserWindowOptions.show = true;
-            browserWindowOptions.width = manifest.show.window.width;
-            browserWindowOptions.height = manifest.show.window.height;
+            browserWindowOptions = { ...browserWindowOptions, ...manifest.show.window };
+        } else {
+            browserWindowOptions.show = false;
         }
+        browserWindowOptions.webPreferences = {
+            ...browserWindowOptions.webPreferences, 
+            ...{ preload: path.join(__dirname, "preload.js") }
+        };
         let loadFile = path.join(dir, "index.html");
         if (manifest.main) {
             if (manifest.main.endsWith(".html")) {
@@ -62,26 +62,33 @@ export class PluginServiceServer {
         }
 
         window.on("closed", () => {
-           this.runningPlugins.delete(manifest.name);  
+            this.runningPlugins.delete(manifest.name);
         });
 
         this.runningPlugins.set(manifest.name, { manifest, window });
 
     }
 
-    private async disablePlugin(manifest: PluginManifest) {
+    public async disablePlugin(manifest: PluginManifest) {
         const plugin = this.runningPlugins.get(manifest.name);
         if (!plugin) {
             console.warn(`Plugin ${manifest.name} not enabled, skip disable`);
             return;
         }
         plugin.window.close();
-        this.runningPlugins.delete(manifest.name);  
+        this.runningPlugins.delete(manifest.name);
 
     }
 
-    async isEnabled(name: string) {
+    public async isEnabled(name: string) {
         return this.runningPlugins.has(name);
+    }
+
+    public async disableAllPlugins() {
+        for (const [name, plugin] of this.runningPlugins.entries()) {
+            plugin.window.close();
+            this.runningPlugins.delete(name);
+        }
     }
 
 }
