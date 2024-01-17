@@ -29,7 +29,7 @@ export function isValidPluginManifest(manifest: any): manifest is PluginManifest
         console.warn("Plugin manifest name is not all lowercase");
         return false;
     } else if (typeof manifest.manifest_version !== 'string') {
-        console.warn("Plugin manifest manifest_version is not a number");
+        console.warn("Plugin manifest manifest_version is not a strubg");
         return false;
     } else if (typeof manifest.version !== 'string') {
         console.warn("Plugin manifest version is not a string");
@@ -40,7 +40,14 @@ export function isValidPluginManifest(manifest: any): manifest is PluginManifest
     } else if (typeof manifest.author !== 'string') {
         console.warn("Plugin manifest author is not a string");
         return false;
-    } 
+    }
+
+    // Version specific checks: manifest version must be "1.0.0"
+    if (manifest.manifest_version !== "1.0.0") {
+        console.warn("Plugin manifest version is not compatible with this version of Vankyle Cite");
+        return false;
+    }
+
     return true;
 }
 
