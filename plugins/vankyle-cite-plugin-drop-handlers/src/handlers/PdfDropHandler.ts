@@ -25,7 +25,7 @@ export class PdfDropHandler extends HandlerBase {
     public async handleDrop(filePath: string): Promise<Paper> {
         const paper = {} as Paper;
 
-        const content = window.App.Services.FileSystemService.readFileContent(filePath.replace("file://", ""));
+        const content = await window.App.Services.FileSystemService.readFileContent(filePath.replace("file://", ""));
         let zoteroData = await zoteroPdfWorker.getRecognizerData(
             content, "", this.cmapProvider, this.standardFontProvider
         );

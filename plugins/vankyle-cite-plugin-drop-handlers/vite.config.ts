@@ -4,17 +4,14 @@ import { defineConfig } from 'vite';
 export default defineConfig({
     build: {
         lib: {
+            name: 'vankyle-cite-plugin-drop-handlers',
             entry: 'src/main.ts',
         },
         outDir: 'dist',
-        rollupOptions: {
-            external: ['vankyle-cite-types'],
+        rollupOptions:{
             output: {
-                globals: {
-                    'vankyle-cite-types': 'vankyle-cite-types',
-                },
-                file: 'dist/index.js',
-            },
-        },
+                entryFileNames: "index.js"
+            }
+        }
     },
 });
