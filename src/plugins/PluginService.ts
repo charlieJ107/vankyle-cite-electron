@@ -23,7 +23,7 @@ export class PluginServiceServer {
             console.warn(`Plugin ${manifest.name} already enabled, skip enable`);
             return;
         }
-        let browserWindowOptions: Electron.BrowserWindowConstructorOptions = { };
+        let browserWindowOptions: Electron.BrowserWindowConstructorOptions = {};
         if (manifest.show && manifest.show.window) {
             browserWindowOptions.show = true;
             browserWindowOptions = { ...browserWindowOptions, ...manifest.show.window };
@@ -31,17 +31,23 @@ export class PluginServiceServer {
             browserWindowOptions.show = false;
         }
         browserWindowOptions.webPreferences = {
-            ...browserWindowOptions.webPreferences, 
+            ...browserWindowOptions.webPreferences,
             ...{ preload: path.join(__dirname, "preload.js") }
         };
-        let loadFile = path.join(dir, "index.html");
+        console.log(browserWindowOptions);
+        const window = new BrowserWindow(browserWindowOptions);
+
         if (manifest.main) {
             if (manifest.main.endsWith(".html")) {
-                loadFile = path.join(dir, manifest.main);
+                window.loadFile(path.join(dir, manifest.main));
             } else if (manifest.main.endsWith(".js")) {
-                const jsContent = fs.readFileSync(path.join(dir, manifest.main), "utf-8");
-                const htmlContent = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${manifest.name}</title></head><body><script>${jsContent}</script></body></html>`;
-                fs.writeFileSync(loadFile, htmlContent);
+                window.loadFile(path.join(dir, "index.html"));
+                window.on("ready-to-show", () => {
+                    window.webContents.executeJavaScript(fs.readFileSync(path.join(dir, manifest.main), {encoding: "utf-8"}))
+                    .catch((e) => {
+                        console.error(e);
+                    });
+                });
             } else {
                 console.warn(`Plugin ${manifest.name} main is not html or js, skip enable`);
                 return;
@@ -53,8 +59,7 @@ export class PluginServiceServer {
             }
         }
 
-        const window = new BrowserWindow(browserWindowOptions);
-        window.loadFile(loadFile);
+
 
         // if in dev mode, open dev tools
         if (process.env.NODE_ENV === "development") {

@@ -2,21 +2,21 @@
   "name": "vankyle-cite-plugin-drop-handlers",
   "private": true,
   "version": "0.0.0",
-  "type": "module",
   "displayName": "Drop Handlers",
   "manifest_version": "1.0.0",
-  "main": "dist/index.html",
+  "main": "dist/index.js",
+  "author": "CharlieJ107",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview"
   },
   "devDependencies": {
-    "typescript": "^5.2.2",
+    "typescript": "^5.3.3",
     "vankyle-cite-types": "file://../../vankyle-cite-types",
-    "vite": "^5.0.8"
+    "vite": "^5.0.11"
   },
   "dependencies": {
-    "zotero-pdf-worker": "git+git@github.com:charlieJ107/zotero-pdf-worker.git"
+    "@charliej107/zotero-pdf-worker": "^1.0.0"
   }
 }

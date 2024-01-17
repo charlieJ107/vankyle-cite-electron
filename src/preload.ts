@@ -21,6 +21,7 @@ serviceProvider.waitForServices(
     "DropService",
     "PaperService"
 ).then(() => {
+    console.log("All services ready");
     contextBridge.exposeInMainWorld("App", {
         get Services() {
             return serviceProvider.getAppServices();
