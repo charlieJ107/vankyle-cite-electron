@@ -1,10 +1,10 @@
 import { MessagePortMain, ipcMain, utilityProcess } from "electron";
 import { REGISTER_AGENT } from "../rpc/IMessages";
 import { createAppWindow } from "./app-window";
-import { PluginService, PluginServiceServer } from "@/plugins/PluginService";
+import { PluginService, PluginServiceServer } from "../../plugins/PluginService";
 import { MessagePortRpcAgent } from "../rpc/MessagePortRpcAgent";
 import { ServiceProvider } from "../../services/ServiceProvider";
-import { FileSystemService } from "../../main/services/FileSystemService";
+import { FileSystemService } from "../../services/main/FileSystemService";
 import path from "path";
 
 export function init() {

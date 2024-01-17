@@ -13,7 +13,7 @@ import { DropServiceServer } from "./DropService/DropService";
 import { PluginManager } from "./PluginManager/PluginManager";
 import { PluginService } from "../plugins/PluginService";
 import { ConfigService } from "./ConfigService/ConfigService";
-import { FileSystemService } from "../main/services/FileSystemService";
+import { FileSystemService } from "./main/FileSystemService";
 
 import path from "path";
 
