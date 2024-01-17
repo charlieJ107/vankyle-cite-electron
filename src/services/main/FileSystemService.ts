@@ -1,6 +1,7 @@
 import { app } from "electron";
 import path from "path";
 import fs from "fs";
+import { EventEmitter } from "events";
 
 type PathName = 'home' | 'appData' | 'userData' | 'sessionData' | 'temp' | 'exe' | 'module' | 'desktop' | 'documents' | 'downloads' | 'music' | 'pictures' | 'videos' | 'recent' | 'logs' | 'crashDumps'
 
@@ -18,7 +19,10 @@ export class FileSystemService {
         return this.appDataPath;
     }
 
-    async readFileContent(filePath: string): Promise<Buffer> {
-        return await fs.promises.readFile(filePath);
+    async readFile(path: fs.PathLike | fs.promises.FileHandle, options?: {
+        encoding?: null;
+        flag?: fs.OpenMode;
+    } & EventEmitter.Abortable): Promise<Buffer> {
+        return await fs.promises.readFile(path, options);
     }
 }
