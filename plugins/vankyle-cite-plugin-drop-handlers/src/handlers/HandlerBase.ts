@@ -4,7 +4,7 @@ export abstract class HandlerBase {
     constructor() {
 
     }
-    public abstract handleDrop(filePath: string): Paper;
+    public abstract handleDrop(filePath: string): Promise<Paper>;
 
-    public abstract isValidDrop(filePaths: string): boolean;
+    public abstract isSupport(filePaths: string): boolean;
 }

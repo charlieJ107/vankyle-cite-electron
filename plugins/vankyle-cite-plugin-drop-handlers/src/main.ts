@@ -9,7 +9,7 @@ function main(_filePaths: string[]): Paper[] {
   for (const filePath of _filePaths) {
     let paper = {} as Paper;
     for (const handler of handlers) {
-      if (handler.isValidDrop(filePath)) {
+      if (handler.isSupport(filePath)) {
         const handleResult = handler.handleDrop(filePath);
         paper = {
           ...paper,
