@@ -1,6 +1,6 @@
 import "vankyle-cite-types";
 import { Paper } from "vankyle-cite-types";
-export function main(filePaths: string[]): Paper[] {
+export function main(_filePaths: string[]): Paper[] {
   // do something with paper
   return [] as Paper[];
 }

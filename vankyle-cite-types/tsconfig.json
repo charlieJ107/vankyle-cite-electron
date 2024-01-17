@@ -3,7 +3,6 @@
         "target": "ESNext",
         "module": "commonjs",
         "declaration": true,
-        // "emitDeclarationOnly": true,
         "esModuleInterop": true,
         "baseUrl": "..",
         "outDir": "./dist"
