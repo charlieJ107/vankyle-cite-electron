@@ -1,6 +1,6 @@
 import { PaperService } from '../../src/services/PaperService/PaperService';
 import { DropService } from '../../src/services/DropService/DropService';
-import { FileSystemService } from '../../src/main/services/FileSystemService';
+import { FileSystemService } from '../../src/services/main/FileSystemService';
 import { ConfigService } from '../../src/services/ConfigService/ConfigService';
 import { PluginManager } from '../../src/services/PluginManager/PluginManager';
 import { Author } from '../../src/models/author';
