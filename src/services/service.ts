@@ -16,6 +16,8 @@ import { ConfigService } from "./services/ConfigService";
 import { FileSystemService } from "./main/FileSystemService";
 
 import path from "path";
+import { AuthorService } from "./services/AuthorService";
+import { Author } from "src/models/author";
 
 const RpcManager = new MessagePortRpcManager();
 
@@ -31,6 +33,7 @@ const serviceProvider = new ServiceProvider(ServiceAgent);
 const paperService = new PaperService(new JsonFileDatabase<Paper>());
 serviceProvider.registerServiceServer("DropService", new DropServiceServer(ServiceAgent));
 serviceProvider.registerService("PaperService", paperService);
+serviceProvider.registerService("AuthorService", new AuthorService(new JsonFileDatabase<Author>()));
 // TODO: Wait for main process to be ready
 serviceProvider.registeServiceFactory<ConfigService>("ConfigService", async () => {
     const fileSystemService = serviceProvider.getService<FileSystemService>("FileSystemService");

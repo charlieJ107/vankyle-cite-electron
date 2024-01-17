@@ -7,20 +7,23 @@ const handlers = [
   new PdfDropHandler(),
 ] as HandlerBase[];
 
-function main(filePaths: string[]): Paper[] {
+async function main(filePaths: string[]): Promise<Paper[]> {
   console.log("main", filePaths);
   const papers = [] as Paper[];
   for (const filePath of filePaths) {
     let paper = {} as Paper;
     for (const handler of handlers) {
       if (handler.isSupport(filePath)) {
-        const handleResult = handler.handleDrop(filePath);
-        paper = {
-          ...paper,
-          ...handleResult,
-        };
+        // TODO: optimize async
+        paper = await handler.handleDrop(filePath).then((result) => {
+          return {
+            ...paper,
+            ...result,
+          };
+        });
       }
     }
+    console.log("paper", paper);
     papers.push(paper);
   }
   return papers;

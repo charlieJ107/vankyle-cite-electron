@@ -7,14 +7,14 @@ const DROP_SERVICE_NOTICE_SERVER = "DropService.noticeServer";
 export class DropService {
     private rpcAgent: IRpcAgent;
     private noticeServer: (event: string, data: any) => void;
-    private handlers: Map<string, (filePaths: string[]) => Paper[]>;
+    private handlers: Map<string, (filePaths: string[]) => Promise<Paper[]>>;
     constructor(rpcAgent: IRpcAgent) {
         this.rpcAgent = rpcAgent;
         this.noticeServer = rpcAgent.resolve(DROP_SERVICE_NOTICE_SERVER);
         this.handlers = new Map();
     }
 
-    public registerDropHandler(handler: (filePaths: string[]) => Paper[]): void {
+    public registerDropHandler(handler: (filePaths: string[]) => Promise<Paper[]>): void {
         const name = `${DROP_SERVICE_REGISTER_HANDLER}-${this.rpcAgent.agentId}-${Math.floor(Math.random() * 100)}`;
         this.rpcAgent.register(name, handler);
         this.handlers.set(name, handler);

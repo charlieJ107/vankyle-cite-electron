@@ -8,6 +8,7 @@ import { Paper } from '../../src/models/paper';
 import { Tag } from '../../src/models/tag';
 import { Group } from '../../src/models/group';
 import { BaseDataModel } from '../../src/models/DataModel';
+import { AuthorService } from '../../src/services/services/AuthorService';
 
 interface App {
     Services: {
@@ -16,6 +17,7 @@ interface App {
         FileSystemService: FileSystemService;
         ConfigService: ConfigService;
         PluginManager: PluginManager;
+        AuthorService: AuthorService;
     }
 }
 

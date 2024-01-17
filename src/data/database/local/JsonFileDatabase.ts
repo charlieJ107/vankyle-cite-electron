@@ -44,9 +44,15 @@ export class JsonFileDatabase<T extends BaseDataModel> implements IDatabase<T> {
         this.updateBuffer();
         return Promise.resolve(Object.values(this.buffer).filter(filter || (() => true)));
     }
-    async save(model: T): Promise<void> {
-        this.buffer[model._id] = model;
-        return await this.saveBuffer();
+    async save(model: Partial<T>): Promise<T> {
+        if (!model._id) {
+            // new object, generate id
+            model._id = Math.random().toString(36);
+        }
+        // TODO: Check nullable
+        this.buffer[model._id] = model as T;
+        await this.saveBuffer();
+        return model as T;
 
     }
     async delete(id: string): Promise<void> {

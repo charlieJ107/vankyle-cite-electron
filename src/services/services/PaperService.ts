@@ -12,7 +12,7 @@ export class PaperService {
     getPaper(id: string): Promise<Paper | null> {
         return this.database.get(id);
     }
-    savePaper(paper: Paper): Promise<void> {
+    savePaper(paper: Paper): Promise<Paper> {
         return this.database.save(paper);
     }
 }

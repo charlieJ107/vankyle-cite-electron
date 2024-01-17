@@ -24,7 +24,10 @@ export interface Paper extends BaseDataModel {
     group?: Group;
     cite: Paper[] | string[]; // paper id
     doi?: string;
-    arxivId?: string;
+    arxiv?: string;
+    abstarct?: string;
+    language?: string;
+    type?: string;
     [key: string]: unknown; // for future extension
 
 }
