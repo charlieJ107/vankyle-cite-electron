@@ -121,6 +121,7 @@ export class ServiceProvider {
         if (this.serviceServers.includes(name)) {
             const service = factory();
             this.serviceInstances.set(name, service);
+            this.services.set(name, this.getServiceInfo(name, service));
             return Promise.resolve();
         }
 
@@ -139,6 +140,7 @@ export class ServiceProvider {
                 });
                 this.pendingDependencyPromises.delete(name);
             }
+            this.services.set(name, this.getServiceInfo(name, service));
         });
 
     }
