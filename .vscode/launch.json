@@ -15,7 +15,8 @@
                 "<node_internals>/**"
             ],
             "type": "node",
-            "console": "internalConsole"
+            "console": "internalConsole",
+            "preLaunchTask": "plugins-prelaunch"
         }
     ]
 }

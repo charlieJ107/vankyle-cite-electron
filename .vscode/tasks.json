@@ -1,0 +1,55 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "build vankyle-cite-types",
+            "type": "shell",
+            "windows": {
+                "options": {
+                    "cwd": "${workspaceFolder}/vankyle-cite-types",
+                    "shell": {
+                        "executable": "pwsh.exe",
+                        "args": [
+                            "-NoProfile",
+                            "-ExecutionPolicy",
+                            "Bypass",
+                            "-Command"
+                        ]
+                    }
+                },
+                "command": "npx webpack"
+            }
+        },
+        {
+            "label": "build vankyle-cite-plugin-drop-handlers",
+            "type": "shell",
+            "windows": {
+                "options": {
+                    "cwd": "${workspaceFolder}/plugins/vankyle-cite-plugin-drop-handlers",
+                    "shell": {
+                        "executable": "pwsh.exe",
+                        "args": [
+                            "-NoProfile",
+                            "-ExecutionPolicy",
+                            "Bypass",
+                            "-Command"
+                        ]
+                    }
+                },
+                "command": "npm install && npm run build"
+            },
+            "dependsOn": [
+                "build vankyle-cite-types"
+            ]
+        },
+        {
+            "label": "plugins-prelaunch",
+            "type": "shell",
+            "dependsOn": [
+                "build vankyle-cite-plugin-drop-handlers"
+            ]
+        }
+    ]
+}
