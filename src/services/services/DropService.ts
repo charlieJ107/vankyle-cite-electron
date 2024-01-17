@@ -3,23 +3,25 @@ import { Paper } from "../../models/paper";
 
 const DROP_SERVICE_DROP_EVENT = "DropService.dropEvent";
 const DROP_SERVICE_REGISTER_HANDLER = "DropService.registerHandler";
+const DROP_SERVICE_NOTICE_SERVER = "DropService.noticeServer";
 export class DropService {
     private rpcAgent: IRpcAgent;
     private noticeServer: (event: string, data: any) => void;
+    private handlers: Map<string, (filePaths: string[]) => Paper[]>;
     constructor(rpcAgent: IRpcAgent) {
         this.rpcAgent = rpcAgent;
-        this.noticeServer = rpcAgent.resolve("DropServiceServer.noticeServer");
-
+        this.noticeServer = rpcAgent.resolve(DROP_SERVICE_NOTICE_SERVER);
+        this.handlers = new Map();
     }
 
     public registerDropHandler(handler: (filePaths: string[]) => Paper[]): void {
         const name = `${DROP_SERVICE_REGISTER_HANDLER}-${this.rpcAgent.agentId}-${Math.floor(Math.random() * 100)}`;
         this.rpcAgent.register(name, handler);
-        this.noticeServer("DropService.registerDropHandler", name);
+        this.handlers.set(name, handler);
+        this.noticeServer(DROP_SERVICE_REGISTER_HANDLER, name);
     }
 
     public handleDropEvent(filePaths: string[]): void {
-
         this.noticeServer(DROP_SERVICE_DROP_EVENT, filePaths);
     }
 }
@@ -30,7 +32,7 @@ export class DropServiceServer {
 
     constructor(rpcAgent: IRpcAgent) {
         this.rpcAgent = rpcAgent;
-        this.rpcAgent.register("DropServiceServer.noticeServer", (event: string, data: any) => {
+        this.rpcAgent.register(DROP_SERVICE_NOTICE_SERVER, (event: string, data: any) => {
             this.noticeServer(event, data);
         });
     }
@@ -56,9 +58,9 @@ export class DropServiceServer {
 
     private handleDropEvent(filePaths: string[]): void {
         let paper: Paper;
-        this.dropHandlers.forEach((handler) => {
+        for (const [name, handler] of this.dropHandlers) {
             paper = handler(filePaths);
-        });
+        }
 
     }
 }
