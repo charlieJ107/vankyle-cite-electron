@@ -4,7 +4,7 @@ import { PluginService } from "../../plugins/PluginService";
 import fs from "fs";
 import path from "path";
 import fsExtra from "fs-extra";
-import { ConfigService } from "../ConfigService/ConfigService";
+import { ConfigService } from "./ConfigService";
 
 type InstalledPlugin = {
     dir: string;

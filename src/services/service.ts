@@ -5,14 +5,14 @@
 import { REGISTER_AGENT } from "../common/rpc/IMessages";
 import { MessagePortRpcManager } from "../common/rpc/MessagePortRpcManager";
 import { MessagePortRpcAgent } from "../common/rpc/MessagePortRpcAgent";
-import { PaperService } from "./PaperService/PaperService";
+import { PaperService } from "./services/PaperService";
 import { ServiceProvider } from "./ServiceProvider";
 import { JsonFileDatabase } from "../data/database/local/JsonFileDatabase";
 import { Paper } from "../models/paper";
-import { DropServiceServer } from "./DropService/DropService";
-import { PluginManager } from "./PluginManager/PluginManager";
+import { DropServiceServer } from "./services/DropService";
+import { PluginManager } from "./services/PluginManager";
 import { PluginService } from "../plugins/PluginService";
-import { ConfigService } from "./ConfigService/ConfigService";
+import { ConfigService } from "./services/ConfigService";
 import { FileSystemService } from "./main/FileSystemService";
 
 import path from "path";

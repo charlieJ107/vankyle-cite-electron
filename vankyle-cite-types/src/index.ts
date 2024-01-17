@@ -1,8 +1,8 @@
-import { PaperService } from '../../src/services/PaperService/PaperService';
-import { DropService } from '../../src/services/DropService/DropService';
+import { PaperService } from '../../src/services/services/PaperService';
+import { DropService } from '../../src/services/services/DropService';
 import { FileSystemService } from '../../src/services/main/FileSystemService';
-import { ConfigService } from '../../src/services/ConfigService/ConfigService';
-import { PluginManager } from '../../src/services/PluginManager/PluginManager';
+import { ConfigService } from '../../src/services/services/ConfigService';
+import { PluginManager } from '../../src/services/services/PluginManager';
 import { Author } from '../../src/models/author';
 import { Paper } from '../../src/models/paper';
 import { Tag } from '../../src/models/tag';

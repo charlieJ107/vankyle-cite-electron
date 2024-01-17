@@ -5,7 +5,7 @@ import { contextBridge, ipcRenderer } from "electron";
 import { MessagePortRpcAgent } from "./common/rpc/MessagePortRpcAgent";
 import { REGISTER_AGENT } from "./common/rpc/IMessages";
 import { ServiceProvider } from "./services/ServiceProvider";
-import { DropService } from "./services/DropService/DropService";
+import { DropService } from "./services/services/DropService";
 
 const appServiceAgent = new MessagePortRpcAgent((message, transfer) => {
     ipcRenderer.postMessage(REGISTER_AGENT, message, transfer as MessagePort[]);

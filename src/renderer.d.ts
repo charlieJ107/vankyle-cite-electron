@@ -1,8 +1,8 @@
-import { DropService } from "./services/DropService/DropService";
-import { PaperService } from "./services/PaperService/PaperService";
+import { DropService } from "./services/services/DropService";
+import { PaperService } from "./services/services/PaperService";
 import { FileSystemService } from "./services/FileSystemService";
-import { ConfigService } from "./services/ConfigService/ConfigService";
-import { PluginManager } from "./services/PluginManager/PluginManager";
+import { ConfigService } from "./services/services/ConfigService";
+import { PluginManager } from "./services/services/PluginManager";
 
 declare global {
     interface Window {
