@@ -30,11 +30,8 @@ const ServiceAgent = new MessagePortRpcAgent((message, transfer) => {
     }
 });
 const serviceProvider = new ServiceProvider(ServiceAgent);
-const paperService = new PaperService(new JsonFileDatabase<Paper>());
 serviceProvider.registerServiceServer("DropService", new DropServiceServer(ServiceAgent));
-serviceProvider.registerService("PaperService", paperService);
-serviceProvider.registerService("AuthorService", new AuthorService(new JsonFileDatabase<Author>()));
-// TODO: Wait for main process to be ready
+
 serviceProvider.registeServiceFactory<ConfigService>("ConfigService", async () => {
     const fileSystemService = serviceProvider.getService<FileSystemService>("FileSystemService");
     let appDataPath = await fileSystemService.getAppDataPath();
@@ -46,6 +43,21 @@ serviceProvider.registeServiceFactory<ConfigService>("ConfigService", async () =
     }
     return new ConfigService(appDataPath);
 }, "FileSystemService");
+
+serviceProvider.registeServiceFactory<PaperService>("PaperService", async () => {
+    const configService = serviceProvider.getService<ConfigService>("ConfigService");
+    const config = await configService.getConfig();
+    const paperService = new PaperService(new JsonFileDatabase<Paper>(path.join(config.data.data_dir, "papers.json")));
+    return paperService;
+}, "ConfigService");
+
+serviceProvider.registeServiceFactory<AuthorService>("AuthorService", async () => {
+    const configService = serviceProvider.getService<ConfigService>("ConfigService");
+    const config = await configService.getConfig();
+    const authorService = new AuthorService(new JsonFileDatabase<Author>(path.join(config.data.data_dir, "authors.json")));
+    return authorService;
+}, "ConfigService");
+
 serviceProvider.registeServiceFactory<PluginManager>("PluginManager", async () => {
     await serviceProvider.registerPrivateServiceClient("PluginService", () => new PluginService(ServiceAgent));
     const configService = serviceProvider.getService<ConfigService>("ConfigService");

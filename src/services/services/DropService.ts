@@ -49,6 +49,7 @@ export class DropServiceServer {
                 console.warn("Invalid event: ", event);
                 break;
         }
+        // We must return something, otherwise the rpc will fail when checking message type
         return "ok";
     }
 

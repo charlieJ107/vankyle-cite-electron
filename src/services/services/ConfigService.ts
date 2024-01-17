@@ -12,12 +12,15 @@ export class ConfigService {
         let content = fs.readFileSync(this.configFilePath, "utf-8");
         // if config file is empty, create a new one
         if (content === "") {
-            const defaultConfig = {
+            const defaultConfig: IConfig = {
                 plugins: {
                     plugin_dir: path.join(appDataPath, "plugins"),
                     enabled_plugins: []
+                },
+                data: {
+                    data_dir: path.join(appDataPath, "data")
                 }
-            } as IConfig;
+            };
             content = JSON.stringify(defaultConfig, null, 4);
             fs.writeFileSync(this.configFilePath, content);
         }
