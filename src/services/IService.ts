@@ -1,4 +1,4 @@
-import { IRpcAgent } from "@/common/rpc/IRpcAgent";
+import { IRpcAgent } from "../common/rpc/IRpcAgent";
 
 export interface IServiceInfo {
     name: string;

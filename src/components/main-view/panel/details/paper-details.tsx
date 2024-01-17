@@ -1,5 +1,5 @@
 import { Subtitle1, Text, Title1 } from "@fluentui/react-components";
-import { Paper } from "@models/paper";
+import { Paper } from "../../../../models/paper";
 
 export function PaperDetails({ paper }: { paper: Paper }) {
     return (

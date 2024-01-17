@@ -2,18 +2,18 @@
  * @fileoverview Entrypoint of the service process.
  */
 
-import { REGISTER_AGENT } from "@/common/rpc/IMessages";
-import { MessagePortRpcManager } from "@/common/rpc/MessagePortRpcManager";
-import { MessagePortRpcAgent } from "@/common/rpc/MessagePortRpcAgent";
+import { REGISTER_AGENT } from "../common/rpc/IMessages";
+import { MessagePortRpcManager } from "../common/rpc/MessagePortRpcManager";
+import { MessagePortRpcAgent } from "../common/rpc/MessagePortRpcAgent";
 import { PaperService } from "./PaperService/PaperService";
 import { ServiceProvider } from "./ServiceProvider";
-import { JsonFileDatabase } from "@/data/database/local/JsonFileDatabase";
-import { Paper } from "@/models/paper";
+import { JsonFileDatabase } from "../data/database/local/JsonFileDatabase";
+import { Paper } from "../models/paper";
 import { DropServiceServer } from "./DropService/DropService";
 import { PluginManager } from "./PluginManager/PluginManager";
-import { PluginService } from "@/plugins/PluginService";
+import { PluginService } from "../plugins/PluginService";
 import { ConfigService } from "./ConfigService/ConfigService";
-import { FileSystemService } from "@/main/services/FileSystemService";
+import { FileSystemService } from "../main/services/FileSystemService";
 
 import path from "path";
 

@@ -1,4 +1,4 @@
-import { IConfig } from "@/data/config/IConfig";
+import { IConfig } from "../../data/config/IConfig";
 import fs from "fs";
 import path from "path";
 import fsExtra from "fs-extra";

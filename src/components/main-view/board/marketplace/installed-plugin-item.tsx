@@ -1,4 +1,4 @@
-import { IPlugin, PluginManifest } from "@/plugins/PluginManifest";
+import { IPlugin, PluginManifest } from "../../../../plugins/PluginManifest";
 import { Button, Card, CardFooter, CardHeader } from "@fluentui/react-components";
 import { AppsAddInRegular, MoreHorizontalRegular } from "@fluentui/react-icons";
 

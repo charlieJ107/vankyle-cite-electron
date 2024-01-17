@@ -1,4 +1,4 @@
-import { Paper } from "@models/paper";
+import { Paper } from "../../../models/paper";
 import { PaperContextAction, PaperContextState } from "./paper-context-types";
 
 export function paperContextReducer(state: PaperContextState, actions: PaperContextAction) {

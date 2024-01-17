@@ -1,4 +1,4 @@
-import { BaseDataModel } from "@/models/DataModel";
+import { BaseDataModel } from "../../models/DataModel";
 import { IConfig } from "../config/IConfig";
 import { JsonFileDatabase } from "./local/JsonFileDatabase";
 import { IDatabase } from "./IDatabase";

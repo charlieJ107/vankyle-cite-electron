@@ -1,4 +1,4 @@
-import { usePaperContext } from "@components/contexts/papers/paper-context";
+import { usePaperContext } from "../../../contexts/papers/paper-context";
 
 export default function FilteredPapersPanel() {
     const papers = usePaperContext();

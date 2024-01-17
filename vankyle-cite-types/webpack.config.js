@@ -13,12 +13,7 @@ module.exports = {
         ],
     },
     resolve: {
-        extensions: ['.tsx', '.ts', '.js'],
-        alias: {
-            '@': path.resolve(__dirname, "..", 'src'),
-            '@models': path.resolve(__dirname, "..", 'src/models'),
-            '@components': path.resolve(__dirname, "..", 'src/components'),
-        },
+        extensions: ['.tsx', '.ts', '.js']
     },
     output: {
         path: path.resolve(__dirname, 'dist'),

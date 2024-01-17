@@ -1,8 +1,8 @@
 
 import { mergeClasses } from "@fluentui/react-components";
 import { Exploer } from "./exploer";
-import { BoardContextState } from "@components/contexts/boards/board-context-types";
-import { useBoardState } from "@components/contexts/boards/board-context";
+import { BoardContextState } from "../../contexts/boards/board-context-types";
+import { useBoardState } from "../../../components/contexts/boards/board-context";
 import { Marketplace } from "./marketplace";
 
 

@@ -6,18 +6,7 @@
         // "emitDeclarationOnly": true,
         "esModuleInterop": true,
         "baseUrl": "..",
-        "outDir": "./dist",
-        "paths": {
-            "@/*": [
-                "src/*"
-            ],
-            "@components/*": [
-                "src/components/*"
-            ],
-            "@models/*": [
-                "src/models/*"
-            ],
-        }
+        "outDir": "./dist"
     },
     "include": ["src"]
 }

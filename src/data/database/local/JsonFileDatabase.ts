@@ -1,4 +1,4 @@
-import { BaseDataModel } from "@models/DataModel";
+import { BaseDataModel } from "../../../models/DataModel";
 import { IDatabase } from "../IDatabase";
 import fs from "fs";
 import path from "path";

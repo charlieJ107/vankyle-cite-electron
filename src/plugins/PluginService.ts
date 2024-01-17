@@ -1,4 +1,4 @@
-import { IRpcAgent } from "@/common/rpc/IRpcAgent";
+import { IRpcAgent } from "../common/rpc/IRpcAgent";
 import { BrowserWindow, app } from "electron";
 import { PluginManifest } from "./PluginManifest";
 import path from "path";

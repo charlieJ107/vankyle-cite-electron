@@ -3,10 +3,9 @@ import { REGISTER_AGENT } from "../rpc/IMessages";
 import { createAppWindow } from "./app-window";
 import { PluginService, PluginServiceServer } from "@/plugins/PluginService";
 import { MessagePortRpcAgent } from "../rpc/MessagePortRpcAgent";
-import { ServiceProvider } from "@/services/ServiceProvider";
-import { FileSystemService } from "@/main/services/FileSystemService";
+import { ServiceProvider } from "../../services/ServiceProvider";
+import { FileSystemService } from "../../main/services/FileSystemService";
 import path from "path";
-import { PluginManager } from "@/services/PluginManager/PluginManager";
 
 export function init() {
 

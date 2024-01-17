@@ -1,5 +1,5 @@
-import { IDatabase } from "@/data/database/IDatabase";
-import { Paper } from "@/models/paper";
+import { IDatabase } from "../../data/database/IDatabase";
+import { Paper } from "../../models/paper";
 
 export class PaperService {
     private database: IDatabase<Paper>;

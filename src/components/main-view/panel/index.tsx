@@ -1,7 +1,7 @@
 import { Button, SelectTabData, SelectTabEvent, Tab, TabList, TabValue, mergeClasses } from "@fluentui/react-components";
 import { DismissRegular } from "@fluentui/react-icons";
-import { usePaperContext, usePaperDispatch } from "@components/contexts/papers/paper-context";
-import { BlockTab } from "@components/contexts/tabs/tabs-context-types";
+import { usePaperContext, usePaperDispatch } from "../../contexts/papers/paper-context";
+import { BlockTab } from "../../contexts/tabs/tabs-context-types";
 import { useState } from "react";
 import { DetailsPanel } from "./details";
 

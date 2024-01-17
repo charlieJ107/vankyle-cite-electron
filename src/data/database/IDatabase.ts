@@ -1,4 +1,4 @@
-import { BaseDataModel } from "@models/DataModel";
+import { BaseDataModel } from "../../models/DataModel";
 
 export interface IDatabase<T_ModelType extends BaseDataModel> {
     get(id: string): Promise<T_ModelType | null>;

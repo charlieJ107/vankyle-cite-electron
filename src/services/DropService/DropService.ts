@@ -1,5 +1,5 @@
-import { IRpcAgent } from "@/common/rpc/IRpcAgent";
-import { Paper } from "@/models/paper";
+import { IRpcAgent } from "../../common/rpc/IRpcAgent";
+import { Paper } from "../../models/paper";
 
 const DROP_SERVICE_DROP_EVENT = "DropService.dropEvent";
 const DROP_SERVICE_REGISTER_HANDLER = "DropService.registerHandler";

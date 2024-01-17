@@ -1,7 +1,7 @@
 import { makeStyles, mergeClasses, tokens } from "@fluentui/react-components"
-import Board from "@components/main-view/board";
-import Library from "@components/main-view/library";
-import Panel from "@components/main-view/panel";
+import Board from "../main-view/board";
+import Library from "../main-view/library";
+import Panel from "../main-view/panel";
 
 const useStyle = makeStyles({
     main: {

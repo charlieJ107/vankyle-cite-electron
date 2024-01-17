@@ -1,5 +1,5 @@
 import { Button, Tooltip, makeStyles, mergeClasses, tokens } from "@fluentui/react-components";
-import { useTooltipRef } from "@components/side-bar/context/tooltip-ref-context";
+import { useTooltipRef } from "../side-bar/context/tooltip-ref-context";
 import React from "react";
 
 const useSideBarStyle = makeStyles({

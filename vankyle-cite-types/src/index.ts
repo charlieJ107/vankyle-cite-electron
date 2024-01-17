@@ -1,13 +1,13 @@
-import { PaperService } from '@/services/PaperService/PaperService';
-import { DropService } from '@/services/DropService/DropService';
-import { FileSystemService } from '@/main/services/FileSystemService';
-import { ConfigService } from '@/services/ConfigService/ConfigService';
-import { PluginManager } from '@/services/PluginManager/PluginManager';
-import { Author } from '@/models/author';
-import { Paper } from '@/models/paper';
-import { Tag } from '@/models/tag';
-import { Group } from '@/models/group';
-import { BaseDataModel } from '@/models/DataModel';
+import { PaperService } from '../../src/services/PaperService/PaperService';
+import { DropService } from '../../src/services/DropService/DropService';
+import { FileSystemService } from '../../src/main/services/FileSystemService';
+import { ConfigService } from '../../src/services/ConfigService/ConfigService';
+import { PluginManager } from '../../src/services/PluginManager/PluginManager';
+import { Author } from '../../src/models/author';
+import { Paper } from '../../src/models/paper';
+import { Tag } from '../../src/models/tag';
+import { Group } from '../../src/models/group';
+import { BaseDataModel } from '../../src/models/DataModel';
 
 interface App {
     Services: {

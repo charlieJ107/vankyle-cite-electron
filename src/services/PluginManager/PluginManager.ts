@@ -1,6 +1,6 @@
-import { IConfig } from "@/data/config/IConfig";
-import { IPlugin, PluginManifest, isValidPluginManifest } from "@/plugins/PluginManifest";
-import { PluginService } from "@/plugins/PluginService";
+import { IConfig } from "../../data/config/IConfig";
+import { IPlugin, PluginManifest, isValidPluginManifest } from "../../plugins/PluginManifest";
+import { PluginService } from "../../plugins/PluginService";
 import fs from "fs";
 import path from "path";
 import fsExtra from "fs-extra";

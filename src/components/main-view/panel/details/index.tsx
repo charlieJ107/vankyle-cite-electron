@@ -1,4 +1,4 @@
-import { usePaperContext } from "@components/contexts/papers/paper-context";
+import { usePaperContext } from "../../../contexts/papers/paper-context";
 import { PaperDetails } from "./paper-details";
 
 export function DetailsPanel() {

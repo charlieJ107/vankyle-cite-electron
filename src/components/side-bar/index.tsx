@@ -1,8 +1,8 @@
 import { makeStyles, tokens } from "@fluentui/react-components";
 import { AppsAddInRegular, BoardRegular } from "@fluentui/react-icons";
-import { SidebarIconButton } from "@components/side-bar/side-bar-icon-button";
-import { SideBarNav } from "@components/side-bar/context/tooltip-ref-context";
-import { useBoardDispatch } from "@components/contexts/boards/board-context";
+import { SidebarIconButton } from "./side-bar-icon-button";
+import { SideBarNav } from "./context/tooltip-ref-context";
+import { useBoardDispatch } from "../contexts/boards/board-context";
 
 export const useStyle = makeStyles({
     sideBar: {

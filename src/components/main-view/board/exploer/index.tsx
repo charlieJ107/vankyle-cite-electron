@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { BlockTab } from "@components/contexts/tabs/tabs-context-types";
+import { BlockTab } from "../../../contexts/tabs/tabs-context-types";
 import { SelectTabData, SelectTabEvent, Tab, TabList, TabValue, mergeClasses } from "@fluentui/react-components";
 import { PapersExploer } from "./papers-exploer";
 

@@ -1,8 +1,8 @@
 import * as echarts from 'echarts/core';
 import { useRef } from 'react';
-import { useTheme } from '@components/contexts/theme/theme-context';
+import { useTheme } from '../../../contexts/theme/theme-context';
 import { EChartsOption } from 'echarts';
-import { usePaperContext } from '@components/contexts/papers/paper-context';
+import { usePaperContext } from '../../../contexts/papers/paper-context';
 
 export default function RelationshipChart() {
     const chartRef = useRef<HTMLDivElement>(null);

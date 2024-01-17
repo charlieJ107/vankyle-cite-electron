@@ -1,4 +1,4 @@
-import { IPlugin, PluginManifest } from "@/plugins/PluginManifest";
+import { IPlugin, PluginManifest } from "../../../../plugins/PluginManifest";
 import { useEffect, useState } from "react";
 import { InstalledPluginItem } from "./installed-plugin-item";
 import { Body1Strong, Divider, Subtitle2, Text, makeStyles, mergeClasses, shorthands, tokens } from "@fluentui/react-components";

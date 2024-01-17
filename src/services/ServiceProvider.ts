@@ -1,4 +1,4 @@
-import { IRpcAgent } from "@/common/rpc/IRpcAgent";
+import { IRpcAgent } from "../common/rpc/IRpcAgent";
 import { IService, IServiceInfo } from "./IService";
 
 export const SERVICE_PROVIDER_REGISTER_SERVICE_CHANNEL = "ServiceProvider.registerService";

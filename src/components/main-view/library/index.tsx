@@ -1,7 +1,7 @@
 import { SelectTabData, SelectTabEvent, Tab, TabList, TabValue, mergeClasses } from "@fluentui/react-components";
 import PapersList from "./papers";
 import { useState } from "react";
-import { BlockTab } from "@components/contexts/tabs/tabs-context-types";
+import { BlockTab } from "../../contexts/tabs/tabs-context-types";
 
 
 export default function Library({ className }: { className?: string }) {
