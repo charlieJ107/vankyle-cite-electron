@@ -39,6 +39,21 @@ export class PdfDropHandler extends HandlerBase {
                     "Content-Type": "application/json",
                 },
                 body: dataStr,
+            }).then((res) => {
+                if (res.ok) {
+                    return res;
+                } else {
+                    if (retry > 0) {
+                        retry--;
+                        return new Promise((resolve) => {
+                            setTimeout(resolve, 1000);
+                        }).then(() => {
+                            return requestZotero();
+                        });
+                    } else {
+                        throw Error(res.statusText);
+                    }
+                }
             }).catch((error) => {
                 if (retry > 0) {
                     retry--;
@@ -59,6 +74,9 @@ export class PdfDropHandler extends HandlerBase {
             doi: string;
             mainURL?: string;
             type: string;
+            abstract?: string;
+            language?: string;
+            [key: string]: unknown;
         } = await requestZotero().then((response) => {
             if (!response.ok) {
                 throw new Error("Zotero request failed");
@@ -67,16 +85,18 @@ export class PdfDropHandler extends HandlerBase {
             return response.json();
         });
         console.log("zoteroMetadata", zoteroMetadata);
-        if (zoteroMetadata.title) {
-            paper.title = zoteroMetadata.title;
-        }
+
+        // Convert zotero metadata to paper
+
+        // 1. authors
+        // TODO: author service
         if (zoteroMetadata.authors) {
             paper.authors = paper.authors || [];
             zoteroMetadata.authors.forEach(async (author) => {
                 // TODO: author service
-                const authorId = await window.App.Services.AuthorService.findAuthorByName(author.firstName, author.lastName);
-                if (authorId) {
-                    paper.authors.push(authorId);
+                const authorEntity = await window.App.Services.AuthorService.findAuthorByName(author.firstName, author.lastName);
+                if (authorEntity._id) {
+                    paper.authors.push(authorEntity._id);
                 } else {
                     const newAuthor = {
                         firstName: author.firstName,
@@ -87,6 +107,7 @@ export class PdfDropHandler extends HandlerBase {
                 }
             });
         }
+        // 2. others
         paper = {
             ...paper,
             title: zoteroMetadata.title || paper.title,
@@ -94,8 +115,8 @@ export class PdfDropHandler extends HandlerBase {
             doi: zoteroMetadata.doi || paper.doi,
             urls: zoteroMetadata.mainURL ? [...(paper.urls || []), zoteroMetadata.mainURL] : paper.urls,
             type: zoteroMetadata.type || paper.type,
-            abstract: zoteroData.pages[0].text,
-            language: zoteroData.language || paper.language,
+            abstract: zoteroMetadata.abstract || paper.abstract,
+            language: zoteroMetadata.language || paper.language,
         }
         return paper;
     }
